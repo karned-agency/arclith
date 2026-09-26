@@ -1,0 +1,4 @@
+interface:
+  display_name: "Arclith Audit"
+  short_description: "Audit an Arclith project end to end"
+  default_prompt: "Use $arclith-audit to inspect this project and report concrete Arclith gaps."

@@ -1,0 +1,20 @@
+{
+  "name": "arclith",
+  "interface": {
+    "displayName": "Arclith"
+  },
+  "plugins": [
+    {
+      "name": "arclith",
+      "source": {
+        "source": "local",
+        "path": "./plugins/arclith"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}

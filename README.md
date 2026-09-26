@@ -19,6 +19,10 @@ curl -fsS http://127.0.0.1:9000/health
 
 Documentation : [karned-rekipe.github.io/arclith](https://karned-rekipe.github.io/arclith/)
 
+Pour installer une fois les workflows Arclith dans Codex, Claude Code ou un
+client compatible Agent Skills, utiliser le
+[kit Arclith pour agents de codage](https://karned-rekipe.github.io/arclith/agent-toolkit/).
+
 Liens utiles :
 [issues](https://github.com/karned-rekipe/arclith/issues),
 [releases](https://github.com/karned-rekipe/arclith/releases),

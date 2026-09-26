@@ -1,0 +1,15 @@
+{
+  "name": "arclith",
+  "owner": {
+    "name": "Karned RekiPe",
+    "url": "https://github.com/karned-rekipe"
+  },
+  "plugins": [
+    {
+      "name": "arclith",
+      "source": "./plugins/arclith",
+      "description": "Build, expose, audit, and deploy Arclith services with portable agent workflows.",
+      "version": "0.1.0"
+    }
+  ]
+}

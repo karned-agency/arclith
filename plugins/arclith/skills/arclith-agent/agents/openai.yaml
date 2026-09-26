@@ -1,0 +1,4 @@
+interface:
+  display_name: "Arclith Agent"
+  short_description: "Build production-ready Arclith agents"
+  default_prompt: "Use $arclith-agent to create an agent with the appropriate Arclith capabilities."

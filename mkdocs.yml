@@ -38,6 +38,7 @@ nav:
   - Foundations:
       - Préparer son poste: learning/setup.md
       - C'est quoi Arclith ?: foundations/what-is-arclith.md
+      - Kit pour agents de codage: agent-toolkit.md
       - Comprendre le modèle: learning/foundations.md
       - Le chemin hexagonal: foundations/hexagonal-flow.md
       - Modes runtime: foundations/runtime-modes.md

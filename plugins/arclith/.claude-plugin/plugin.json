@@ -1,0 +1,18 @@
+{
+  "name": "arclith",
+  "version": "0.1.0",
+  "description": "Portable workflows for building, exposing, auditing, and deploying Arclith services.",
+  "author": {
+    "name": "Killian KOPP",
+    "url": "https://github.com/karned-rekipe"
+  },
+  "homepage": "https://karned-rekipe.github.io/arclith/agent-toolkit/",
+  "repository": "https://github.com/karned-rekipe/arclith",
+  "license": "Apache-2.0",
+  "keywords": [
+    "arclith",
+    "hexagonal-architecture",
+    "python",
+    "coding-agents"
+  ]
+}

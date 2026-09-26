@@ -1,0 +1,4 @@
+interface:
+  display_name: "Arclith Deploy"
+  short_description: "Package and deploy Arclith services"
+  default_prompt: "Use $arclith-deploy to package and deploy this Arclith service safely."

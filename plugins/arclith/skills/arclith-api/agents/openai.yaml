@@ -1,0 +1,4 @@
+interface:
+  display_name: "Arclith API"
+  short_description: "Build Arclith API and transport surfaces"
+  default_prompt: "Use $arclith-api to expose this project through the right Arclith transport."
