@@ -62,8 +62,8 @@ Une fois la PR de release mergée :
 ```bash
 git switch main
 git pull --ff-only
-git tag -s v0.32.0 -m "Release v0.32.0"
-git push origin v0.32.0
+git tag -s v0.33.0 -m "Release v0.33.0"
+git push origin v0.33.0
 ```
 
 Le tag déclenche `.github/workflows/publish.yml`. Le workflow exécute :
@@ -85,14 +85,14 @@ Puis valider depuis un environnement consommateur isolé :
 ```bash
 tmp_dir="$(mktemp -d)"
 cd "$tmp_dir"
-uvx --from arclith-cli==0.29.0 arclith-cli init pantry-agent --dir .
+uvx --from arclith-cli==0.30.0 arclith-cli init pantry-agent --dir .
 cd pantry-agent
 uv sync
 uv run python -c "import arclith; print(arclith.__version__ if hasattr(arclith, '__version__') else 'arclith import ok')"
-uvx --from arclith-cli==0.29.0 arclith-cli capabilities
-uvx --from arclith-cli==0.29.0 arclith-cli add-entity ShoppingItem --profile crud
-uvx --from arclith-cli==0.29.0 arclith-cli add-adapter --capability api --adapter fastapi --yes
-uvx --from arclith-cli==0.29.0 arclith-cli expose-feature shopping_item --via fastapi --path /v1/shopping-items
+uvx --from arclith-cli==0.30.0 arclith-cli capabilities
+uvx --from arclith-cli==0.30.0 arclith-cli add-entity ShoppingItem --profile crud
+uvx --from arclith-cli==0.30.0 arclith-cli add-adapter --capability api --adapter fastapi --yes
+uvx --from arclith-cli==0.30.0 arclith-cli expose-feature shopping_item --via fastapi --path /v1/shopping-items
 ```
 
 Pour vérifier le blueprint paramétré sans transport depuis les paquets publics :
@@ -112,7 +112,7 @@ transitions:
     from: [submitted]
     to: approved
 YAML
-uvx --from arclith-cli==0.29.0 --with arclith==0.32.0 \
+uvx --from arclith-cli==0.30.0 --with arclith==0.33.0 \
   arclith-cli new Invoice invoice-service \
   --dir "$state_machine_dir" \
   --profile state-machine \
@@ -125,6 +125,27 @@ uv run pytest tests/domain tests/application -q
 Le smoke doit aussi vérifier le refus de l'affectation directe et de
 `model_copy(update={"status": ...})`, puis la transition autorisée
 `draft -> submitted` et le conflit de version du compare-and-swap.
+
+## Release 0.33.0 : autonomie et toolkit agent
+
+Arclith **0.33.0** et arclith-cli **0.30.0** publient le toolkit agent portable
+et la nouvelle identité Karned Agency. La CLI exige `arclith>=0.33.0`, génère
+des liens canoniques vers le dépôt transféré et télécharge son implémentation de
+référence depuis `karned-agency/arclith-reference`.
+
+Cette release sert aussi de preuve de migration OIDC : les deux paquets sont
+publiés depuis le dépôt transféré avec les environnements GitHub `pypi` et
+`pypi-cli`. Après publication, vérifier les métadonnées de projet et les liens
+sur PyPI, puis installer sans cache :
+
+```bash
+uv venv .venv-migration --python 3.13
+uv pip install --python .venv-migration/bin/python --no-cache \
+  --default-index https://pypi.org/simple \
+  arclith==0.33.0 arclith-cli==0.30.0
+.venv-migration/bin/arclith-cli version
+.venv-migration/bin/arclith-cli capabilities
+```
 
 ## Release 0.32.0 : catalogue complet
 

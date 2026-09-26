@@ -4,6 +4,31 @@
 
 ---
 
+## [0.33.0] — 2026-09-26
+
+### Added
+
+- **Agent toolkit portable** (#247) — plugin public pour Codex et Claude avec
+  cinq skills model-neutral couvrant initialisation, API/MCP, agents,
+  déploiement et audit, accompagné de playbooks et de tests de contrat.
+
+### Fixed
+
+- **Identité publique canonique** (#248) — liens de package, CLI, scaffold,
+  plugin, documentation et exemples corrigés vers Karned Agency et
+  `arclith.karned.bzh`, y compris les empreintes de replay concernées.
+
+### Changed
+
+- **Gouvernance autonome** — le framework, l'implémentation de référence et le
+  POC Todo vivent désormais dans `karned-agency`; `_sample` devient
+  `arclith-reference` et le Project GitHub dédié conserve les 66 éléments
+  Arclith sans les tickets métier historiques.
+- **Versions release** — `arclith` passe à `0.33.0`; `arclith-cli` passe à
+  `0.30.0` et dépend de `arclith>=0.33.0`.
+
+---
+
 ## [0.32.0] — 2026-09-15
 
 ### Added
