@@ -3,7 +3,7 @@
 Le blueprint `workflow` orchestre des étapes séquentielles typées, conserve leur
 progression et reprend depuis le dernier checkpoint confirmé. Le domaine reste
 indépendant du moteur d'exécution : les étapes métier et la projection du résultat
-sont injectées derrière des ports. Cette V1 correspond à l'[issue #226](https://github.com/karned-rekipe/arclith/issues/226).
+sont injectées derrière des ports. Cette V1 correspond à l'[issue #226](https://github.com/karned-agency/arclith/issues/226).
 
 Les adapters mémoire fournis servent au développement et aux tests. **Ils ne
 survivent pas à un redémarrage du processus.** La durabilité réelle nécessite

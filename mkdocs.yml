@@ -1,8 +1,8 @@
 site_name: Arclith
 site_description: Documentation Arclith pour construire des services hexagonaux Python.
-site_url: https://karned-rekipe.github.io/arclith/
-repo_url: https://github.com/karned-rekipe/arclith
-repo_name: karned-rekipe/arclith
+site_url: https://arclith.karned.bzh/
+repo_url: https://github.com/karned-agency/arclith
+repo_name: karned-agency/arclith
 
 docs_dir: docs
 site_dir: site

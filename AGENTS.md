@@ -2,8 +2,9 @@
 
 ## Contexte global
 
-`arclith` est le framework hexagonal partagé par les microservices Arclith/Rekipe. Il est publié sur PyPI (`arclith>=0.2.0`) et
-ne doit contenir aucune logique métier. Les repos consommateurs (`recipe/`, `_sample/`) l'importent en dépendance.
+`arclith` est un framework hexagonal Python autonome, maintenu dans l'organisation
+`karned-agency` et publié sur PyPI. Il ne doit contenir aucune logique métier.
+L'implémentation de référence `arclith-reference` le consomme comme un projet externe.
 
 ## Rôle
 
@@ -145,7 +146,7 @@ Sections validées depuis `config.yaml` :
 - Logger injecté partout — jamais `print()` ni `logging` directement dans les use cases.
 - `PurgeUseCase` : supprime physiquement les entités dont `deleted_at` est dépassé de `retention_days` jours.
 - Layout applicatif canonique : `src/<package>/{domain,application,adapters,infrastructure}`. Garder cette convention dans
-  `arclith.infrastructure.project_layout` et vérifier `_sample/` avant publication.
+  `arclith.infrastructure.project_layout` et vérifier `arclith-reference` avant publication.
 
 ## Commandes utiles
 

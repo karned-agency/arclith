@@ -88,7 +88,7 @@ Pour préparer une publication registry, utiliser un tag explicite:
 
 ```bash
 VERSION=0.1.0
-IMAGE=ghcr.io/karned-rekipe/my-service:$VERSION
+IMAGE=ghcr.io/karned-agency/my-service:$VERSION
 
 docker build -t "$IMAGE" .
 docker image inspect "$IMAGE" --format '{{.Id}} {{.Config.User}}'

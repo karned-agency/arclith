@@ -38,7 +38,7 @@
   "src/compat_jobs/domain/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
   "src/compat_jobs/domain/events/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
   "src/compat_jobs/domain/models/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-  "src/compat_jobs/domain/models/document.py": "6f7280aca9c88692e0fd14e1a830b98ccaed8efb4492f09edfbb5b457cc6481b",
+  "src/compat_jobs/domain/models/document.py": "97f101c2617dd9e8f1f532b155a979015a40ac3016ef7fdca79d01ba3242f950",
   "src/compat_jobs/domain/models/document_job_job.py": "3045dc22098a3d2e0a53d784e86382711bf459af87f4f099890ce0bf5aa8ce8a",
   "src/compat_jobs/domain/models/report_job_job.py": "2aeec739e376d8d5ab2a7ff6ebf8203dd463f76dc061da89f47709bf86d7cc5f",
   "src/compat_jobs/domain/ports/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",

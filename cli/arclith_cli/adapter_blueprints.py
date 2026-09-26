@@ -191,7 +191,7 @@ def get_adapter_blueprint(adapter: AdapterSpec) -> AdapterBlueprint:
         roles=roles,
         modules=modules,
         reference=_REFERENCES.get(
-            adapter.capability, "https://karned-rekipe.github.io/arclith/capabilities/"
+            adapter.capability, "https://arclith.karned.bzh/capabilities/"
         ),
     )
 

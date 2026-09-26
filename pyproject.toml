@@ -29,8 +29,10 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/karned-rekipe/arclith"
-Repository = "https://github.com/karned-rekipe/arclith"
+Homepage = "https://arclith.karned.bzh/"
+Repository = "https://github.com/karned-agency/arclith"
+Documentation = "https://arclith.karned.bzh/"
+Issues = "https://github.com/karned-agency/arclith/issues"
 
 [project.scripts]
 arclith-agent-runtime = "arclith.adapters.inbound.langgraph_runtime.server:main"

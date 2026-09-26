@@ -44,8 +44,8 @@ projet PyPI ciblé.
 
 | Projet PyPI | Owner GitHub | Repository | Workflow filename | Environment |
 | --- | --- | --- | --- | --- |
-| `arclith` | `karned-rekipe` | `arclith` | `publish.yml` | `pypi` |
-| `arclith-cli` | `karned-rekipe` | `arclith` | `publish.yml` | `pypi-cli` |
+| `arclith` | `karned-agency` | `arclith` | `publish.yml` | `pypi` |
+| `arclith-cli` | `karned-agency` | `arclith` | `publish.yml` | `pypi-cli` |
 
 Le fichier correspondant dans le dépôt est `.github/workflows/publish.yml`. Le champ PyPI demande
 le nom du fichier workflow, pas un token GitHub. GitHub fournit un jeton OIDC court-vivant au job

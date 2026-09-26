@@ -8,7 +8,7 @@ implicite.
 ## Installation
 
 ```bash
-uv tool install "git+https://github.com/karned-rekipe/arclith.git#subdirectory=cli"
+uv tool install "git+https://github.com/karned-agency/arclith.git#subdirectory=cli"
 ```
 
 ## Cockpit plein écran
@@ -70,7 +70,7 @@ présents. Les logs et le code de sortie restent ceux du processus généré ;
 `Ctrl+C` l'arrête normalement.
 
 La documentation complète est disponible dans le
-[guide interactif](https://karned-rekipe.github.io/arclith/cli-guide/).
+[guide interactif](https://arclith.karned.bzh/cli-guide/).
 
 ## Commandes
 
@@ -125,7 +125,7 @@ MODE=api uv run python main.py
 Le parcours fonctionne avec les seuls champs techniques de `Entity`. Le composition root typé
 est régénéré automatiquement pour un use case sans dépendance ou avec une dépendance
 `Repository[Entity]`. Une composition plus riche reste explicite. Voir le
-[guide des bindings](https://karned-rekipe.github.io/arclith/deep-dives/use-case-bindings/).
+[guide des bindings](https://arclith.karned.bzh/deep-dives/use-case-bindings/).
 
 Pour initialiser plutôt les cinq opérations CRUD, utiliser
 `add-entity Todo --profile crud`. Ce blueprint crée le cœur applicatif et sa
@@ -230,7 +230,7 @@ arclith-cli new Measurement measurement-service --profile append-only
 Un record déjà déclaré peut recevoir une feature avec `add-blueprint append-only
 --entity Measurement --feature measurement_ingestion`. Le store mémoire est une
 référence locale non durable. Aucun transport ni query n'est généré. Consulter le
-[contrat append-only](https://karned-rekipe.github.io/arclith/blueprints/append-only/)
+[contrat append-only](https://arclith.karned.bzh/blueprints/append-only/)
 pour l'immutabilité, l'idempotence, les timestamps et les limites.
 
 Pour un cycle de vie métier, `state-machine` résout une spec YAML canonique et
@@ -248,7 +248,7 @@ arclith-cli add-blueprint state-machine --entity Invoice \
 Le modèle généré refuse l'affectation et les mises à jour `model_copy` génériques
 du champ d'état. Le manifeste V2 et la recette embarquent les paramètres résolus,
 pas le chemin local de la spec. Aucun adapter ou transport n'est ajouté. Consulter le
-[contrat state-machine](https://karned-rekipe.github.io/arclith/blueprints/state-machine/)
+[contrat state-machine](https://arclith.karned.bzh/blueprints/state-machine/)
 pour les gardes, le CAS et l'évolution des états persistés.
 
 ---
@@ -271,7 +271,7 @@ La première application écrit `.arclith/features/shopping_item.yaml`. Un repla
 préserve les fichiers applicatifs déjà personnalisés et complète uniquement les
 fichiers manquants. CRUD, append-only, state-machine, job, synchronization et workflow sont des comportements
 explicites ; aucun n'est inféré depuis un adapter. Voir le
-[contrat détaillé](https://karned-rekipe.github.io/arclith/blueprints/).
+[contrat détaillé](https://arclith.karned.bzh/blueprints/).
 
 Pour un job suivi, la feature peut être transverse ou liée à une entité :
 
@@ -304,7 +304,7 @@ Le runner mémoire est **non durable**, avec exécution contrôlée par
 `await runner.run(job_id)`, annulation coopérative et retry explicite borné.
 
 Cette fonctionnalité est disponible avec Arclith ≥ 0.32.0 et CLI ≥ 0.29.0. Le
-[guide job](https://karned-rekipe.github.io/arclith/blueprints/job/) détaille
+[guide job](https://arclith.karned.bzh/blueprints/job/) détaille
 l'installation depuis PyPI, le smoke test, la rétention et les futurs adapters.
 
 ---
@@ -339,7 +339,7 @@ et désactivation atomique après réussite de toutes les pages. Le manifeste V2
 et la recette V1 conservent les paramètres canoniques et les digests.
 
 Cette capacité est disponible avec Arclith ≥ 0.32.0 et CLI ≥ 0.29.0 ; suivre le
-[guide synchronization](https://karned-rekipe.github.io/arclith/blueprints/synchronization/).
+[guide synchronization](https://arclith.karned.bzh/blueprints/synchronization/).
 Le CLI refuse explicitement une génération/reprise sur un framework incompatible.
 
 ### `expose-feature` — Projeter Un Blueprint Applicatif
@@ -415,7 +415,7 @@ Pour une entité principale, le squelette injecte explicitement
 retour. Le mode transverse génère plutôt un `Command` et un `Result` Pydantic,
 sans repository implicite. Aucun mode ne câble FastAPI, FastMCP ou LangGraph.
 Les exemples complets et les règles de séparation sont dans le
-[deep dive du scaffold CLI](https://karned-rekipe.github.io/arclith/deep-dives/cli-scaffold/).
+[deep dive du scaffold CLI](https://arclith.karned.bzh/deep-dives/cli-scaffold/).
 
 ---
 
@@ -660,7 +660,7 @@ fichiers générés restent relatifs à la racine du projet et les étapes rejou
 ne sont pas enregistrées une seconde fois.
 
 Voir la documentation complète :
-[Recettes Arclith CLI](https://karned-rekipe.github.io/arclith/cli-recipe/).
+[Recettes Arclith CLI](https://arclith.karned.bzh/cli-recipe/).
 
 ---
 
@@ -705,7 +705,7 @@ ou store durable n'est installé. Les tests injectent des fakes explicites.
 
 Une reprise conserve les étapes confirmées, utilise une clé d'exécution stable
 pour les effets non confirmés et respecte le budget par étape. La définition et
-les schémas sont versionnés. Le [guide workflow](https://karned-rekipe.github.io/arclith/blueprints/workflow/)
+les schémas sont versionnés. Le [guide workflow](https://arclith.karned.bzh/blueprints/workflow/)
 fournit la spec, la composition, les limites et un exemple exécutable.
 Ce blueprint est disponible avec Arclith ≥ 0.32.0 et CLI ≥ 0.29.0.
 

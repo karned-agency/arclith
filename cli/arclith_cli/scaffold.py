@@ -8,7 +8,9 @@ from pathlib import Path
 
 import httpx
 
-_TEMPLATE_URL = "https://github.com/karned-rekipe/_sample/archive/refs/heads/{ref}.zip"
+_TEMPLATE_URL = (
+    "https://github.com/karned-agency/arclith-reference/archive/refs/heads/{ref}.zip"
+)
 
 _DIRS_TO_REMOVE = {
     "__pycache__",

@@ -17,15 +17,15 @@ uvx --from arclith-cli arclith-cli run api
 curl -fsS http://127.0.0.1:9000/health
 ```
 
-Documentation : [karned-rekipe.github.io/arclith](https://karned-rekipe.github.io/arclith/)
+Documentation : [arclith.karned.bzh](https://arclith.karned.bzh/)
 
 Pour installer une fois les workflows Arclith dans Codex, Claude Code ou un
 client compatible Agent Skills, utiliser le
-[kit Arclith pour agents de codage](https://karned-rekipe.github.io/arclith/agent-toolkit/).
+[kit Arclith pour agents de codage](https://arclith.karned.bzh/agent-toolkit/).
 
 Liens utiles :
-[issues](https://github.com/karned-rekipe/arclith/issues),
-[releases](https://github.com/karned-rekipe/arclith/releases),
+[issues](https://github.com/karned-agency/arclith/issues),
+[releases](https://github.com/karned-agency/arclith/releases),
 [arclith PyPI](https://pypi.org/project/arclith/),
 [arclith-cli PyPI](https://pypi.org/project/arclith-cli/).
 

@@ -41,6 +41,12 @@ def test_agent_plugin_manifests_share_identity_and_version() -> None:
     assert {portable["name"], codex["name"], claude["name"]} == {"arclith"}
     assert {portable["version"], codex["version"], claude["version"]} == {"0.1.0"}
     assert portable["license"] == codex["license"] == claude["license"]
+    assert {portable["repository"], codex["repository"], claude["repository"]} == {
+        "https://github.com/karned-agency/arclith"
+    }
+    assert {portable["homepage"], codex["homepage"], claude["homepage"]} == {
+        "https://arclith.karned.bzh/agent-toolkit/"
+    }
 
 
 def test_agent_plugin_marketplaces_reference_the_packaged_plugin() -> None:

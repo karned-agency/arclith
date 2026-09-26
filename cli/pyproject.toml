@@ -22,6 +22,12 @@ dependencies = [
     "textual>=8.2.8,<9.0.0",
 ]
 
+[project.urls]
+Homepage = "https://arclith.karned.bzh/"
+Repository = "https://github.com/karned-agency/arclith"
+Documentation = "https://arclith.karned.bzh/cli-guide/"
+Issues = "https://github.com/karned-agency/arclith/issues"
+
 [tool.uv.sources]
 arclith = { path = "..", editable = true }
 

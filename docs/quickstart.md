@@ -158,7 +158,7 @@ le guide [Recettes Arclith CLI](cli-recipe.md) pour le dry-run et le replay.
 Pour tester une branche de développement avant merge:
 
 ```bash
-uv tool install --force "git+https://github.com/karned-rekipe/arclith.git@feat/hexagonal-foundation#subdirectory=cli"
+uv tool install --force "git+https://github.com/karned-agency/arclith.git@feat/hexagonal-foundation#subdirectory=cli"
 ```
 
 Pour une orchestration en plusieurs étapes reprenables, ajouter un workflow :
@@ -495,31 +495,31 @@ montés. Le `.dockerignore` généré exclut `.env`, `secrets.yaml` et les clés
 make quality
 ```
 
-Le sample officiel `_sample` sert de banc de test pour les évolutions Arclith. Avant de publier
+L'implémentation `arclith-reference` sert de banc de test pour les évolutions Arclith. Avant de publier
 Arclith, vérifier aussi:
 
 ```bash
-cd /Users/killian/Perso/projets/Arclith/_sample
+cd ../arclith-reference
 make quality
 ```
 
 Terminal 1:
 
 ```bash
-cd /Users/killian/Perso/projets/Arclith/_sample
+cd ../arclith-reference
 MODE=all uv run --frozen python main.py
 ```
 
 Terminal 2:
 
 ```bash
-cd /Users/killian/Perso/projets/Arclith/_sample
+cd ../arclith-reference
 make demo-smoke
 ```
 
 ## Reference
 
-- Sample fonctionnel: `../_sample`
+- Implémentation de référence: <https://github.com/karned-agency/arclith-reference>
 - CLI: `cli/README.md`
 - Capacités standardisées: `docs/capabilities.md`
 - Tutoriel Docker: `docs/runtime-docker.md`

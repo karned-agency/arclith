@@ -605,7 +605,7 @@
 - **Layout applicatif canonique** — `ProjectLayout`, `ProjectLayoutKind` et `canonical_project_layout()` exposent la
   convention `src/<package>/{domain,application,adapters,infrastructure}` pour les services Arclith.
 - **Documentation de layout** — README et documentation d'architecture alignés sur le layout namespacé utilisé par
-  `_sample`.
+  `arclith-reference`.
 
 ---
 

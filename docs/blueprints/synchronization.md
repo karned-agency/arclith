@@ -7,7 +7,7 @@ Elle s'exécute comme un [job](job.md), avec les mêmes statuts et le même cont
 d'annulation. Les adapters CRM/ERP, le mapping métier et le stockage durable
 restent à implémenter dans le projet.
 
-Cette capacité est développée dans l'[issue #225](https://github.com/karned-rekipe/arclith/issues/225).
+Cette capacité est développée dans l'[issue #225](https://github.com/karned-agency/arclith/issues/225).
 Elle est disponible à partir d’Arclith **0.32.0** et d’arclith-cli **0.29.0**,
 publiés selon le [processus de release](../release.md).
 

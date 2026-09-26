@@ -6,7 +6,7 @@ import subprocess
 import typer
 from rich.console import Console
 
-_INSTALL_URL = "git+https://github.com/karned-rekipe/arclith.git#subdirectory=cli"
+_INSTALL_URL = "git+https://github.com/karned-agency/arclith.git#subdirectory=cli"
 
 console = Console()
 

@@ -11,7 +11,7 @@ arclith-cli add-adapter --capability runtime --adapter docker-image --yes --dry-
 
 Apply only missing capabilities after reviewing the plans. Synchronize dependencies and run the project's tests before building.
 
-Documentation: <https://karned-rekipe.github.io/arclith/runtime-docker/>
+Documentation: <https://arclith.karned.bzh/runtime-docker/>
 
 ## Local Docker
 
@@ -27,7 +27,7 @@ Build with the repository's documented command and immutable local tag. Start th
 
 Use Compose for a reproducible local or small deployment topology. Add dependency health checks and `depends_on` readiness where appropriate, but still make the application tolerate retries and delayed dependencies. Separate durable volumes from disposable container filesystems.
 
-Documentation: <https://karned-rekipe.github.io/arclith/runtime-docker/docker-compose/>
+Documentation: <https://arclith.karned.bzh/runtime-docker/docker-compose/>
 
 ## Kubernetes
 
@@ -43,10 +43,10 @@ Render and review manifests before applying. Use separate Deployments or workloa
 
 After apply, validate rollout conditions, events, pod identity, effective image digest, logs, probes, and the user-visible endpoint. A green GitOps sync alone does not prove the live application path.
 
-Documentation: <https://karned-rekipe.github.io/arclith/runtime-docker/kubernetes/>
+Documentation: <https://arclith.karned.bzh/runtime-docker/kubernetes/>
 
 ## Production capability review
 
 Review, but do not automatically install, the production baseline for authentication, licensing, shared cache, secrets, probes, observability, and runtime. Each capability must correspond to an accepted requirement and a configured backend.
 
-Documentation: <https://karned-rekipe.github.io/arclith/production/baseline/>
+Documentation: <https://arclith.karned.bzh/production/baseline/>

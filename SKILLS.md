@@ -368,7 +368,7 @@ make test
 ### Références
 
 - `docs/http-conventions.md` — conventions complètes
-- `_sample/adapters/inbound/fastapi/routers/ingredient_router.py` — exemple de référence
+- `../arclith-reference/src/arclith_sample/adapters/inbound/fastapi/routers/ingredient_router.py` — exemple de référence
 
 ---
 
@@ -550,7 +550,7 @@ make test
 
 ### Références
 
-- `_sample/adapters/inbound/` — implémentation de référence
+- `../arclith-reference/src/arclith_sample/adapters/inbound/` — implémentation de référence
 
 ---
 

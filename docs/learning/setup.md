@@ -21,7 +21,7 @@ arclith-cli version
 Pour travailler depuis le dépôt Arclith:
 
 ```bash
-git clone https://github.com/karned-rekipe/arclith.git
+git clone https://github.com/karned-agency/arclith.git
 cd arclith
 uv sync --all-extras
 ```
