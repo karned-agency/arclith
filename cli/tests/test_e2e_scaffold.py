@@ -36,7 +36,7 @@ def _template_args() -> list[str]:
     if template_dir:
         return ["--template-dir", template_dir]
 
-    sibling_template = Path(__file__).resolve().parents[3] / "_sample"
+    sibling_template = Path(__file__).resolve().parents[3] / "arclith-reference"
     if sibling_template.is_dir():
         return ["--template-dir", str(sibling_template)]
 

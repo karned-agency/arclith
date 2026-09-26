@@ -3,7 +3,7 @@ name: arclith-deploy
 description: Package and deploy an Arclith service with its generated Docker runtime, probes, configuration, secrets, Compose, or Kubernetes. Use for containerization, production baselines, runtime modes, deployment manifests, readiness, release images, and live deployment verification.
 license: Apache-2.0
 metadata:
-  author: karned-rekipe
+  author: karned-agency
   version: "0.1.0"
 ---
 

@@ -24,7 +24,7 @@ arclith-cli expose-feature todo --via fastapi --path /v1/todos
 
 Verify the OpenAPI document and each operation's declared responses. A process listening on a port is not sufficient evidence.
 
-Documentation: <https://karned-rekipe.github.io/arclith/quickstarts/api/>
+Documentation: <https://arclith.karned.bzh/quickstarts/api/>
 
 ## FastMCP
 
@@ -37,7 +37,7 @@ arclith-cli expose-usecase create-todo --via fastmcp --feature todos
 
 Keep tool names stable, descriptions specific, inputs typed, outputs bounded, and errors safe for clients. Use streamable HTTP for deployable services; do not reintroduce a stdio runtime where the current Arclith contract does not support one.
 
-Documentation: <https://karned-rekipe.github.io/arclith/quickstarts/mcp/>
+Documentation: <https://arclith.karned.bzh/quickstarts/mcp/>
 
 ## RabbitMQ
 
@@ -50,7 +50,7 @@ arclith-cli expose-usecase create-todo --via rabbitmq \
 
 Define stable command types and validate payloads before dispatch. Make retry and dead-letter behavior explicit, propagate correlation without forwarding credentials, and make idempotency durable when duplicate delivery matters.
 
-Documentation: <https://karned-rekipe.github.io/arclith/quickstarts/bus/>
+Documentation: <https://arclith.karned.bzh/quickstarts/bus/>
 
 ## Completion evidence
 

@@ -25,7 +25,7 @@ Database / Repository
 
 Injecte automatiquement les headers `Cache-Control` selon le verbe HTTP et le type de ressource.
 
-**Configuration (_sample/config/http.yaml):**
+**Configuration (`arclith-reference/config/http.yaml`):**
 
 ```yaml
 cache_control:
@@ -96,7 +96,7 @@ def _is_single_resource_path(self, path: str) -> bool:
 - Utilisé quand: données statiques/publiques (produits, assets)
 - Example: `Cache-Control: public, max-age=3600`
 
-**Dans _sample:** Toutes les ressources utilisent `private` car potentiellement multi-tenant.
+**Dans `arclith-reference` :** Toutes les ressources utilisent `private` car potentiellement multi-tenant.
 
 ### `max-age` — TTL en secondes
 
@@ -122,7 +122,7 @@ Durée pendant laquelle la réponse est considérée "fraîche" sans revalidatio
 - Header: `Cache-Control: no-cache, no-store, must-revalidate`
 - Utilisé quand: mutations (POST/PUT/PATCH/DELETE)
 
-**Dans _sample:** Mutations utilisent `no-cache, no-store, must-revalidate` pour éviter tout cache.
+**Dans `arclith-reference` :** Les mutations utilisent `no-cache, no-store, must-revalidate` pour éviter tout cache.
 
 ## Intégration avec ETag
 

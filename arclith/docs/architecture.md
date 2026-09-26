@@ -37,7 +37,8 @@ tests/
 main.py
 ```
 
-Le framework expose cette convention avec `canonical_project_layout(package_name)`. Le sample officiel `_sample` l'applique sous `src/arclith_sample/`.
+Le framework expose cette convention avec `canonical_project_layout(package_name)`.
+L'implémentation `arclith-reference` l'applique sous `src/arclith_sample/`.
 
 La convention canonique est `inbound` / `outbound`; les anciens noms `input` et `output`
 ne sont pas supportés dans cette refonte pré-1.0:

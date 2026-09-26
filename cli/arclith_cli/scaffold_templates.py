@@ -28,8 +28,8 @@ def render_entity_template(
 from {base_module} import {base_class}
 
 # Guides:
-# - Arclith entity tutorial: https://github.com/karned-rekipe/arclith/blob/main/docs/tutorials/todo-list/02-create-entity.md
-# - Arclith architecture: https://github.com/karned-rekipe/arclith/blob/main/arclith/docs/architecture.md
+# - Arclith entity tutorial: https://github.com/karned-agency/arclith/blob/main/docs/tutorials/todo-list/02-create-entity.md
+# - Arclith architecture: https://github.com/karned-agency/arclith/blob/main/arclith/docs/architecture.md
 # - Pydantic models: https://docs.pydantic.dev/latest/concepts/models/
 # - Pydantic fields: https://docs.pydantic.dev/latest/concepts/fields/
 # - Pydantic validators: https://docs.pydantic.dev/latest/concepts/validators/
@@ -62,8 +62,8 @@ from pydantic import BaseModel
 from {entity_module} import {entity_class}
 
 # Guides:
-# - Arclith use case tutorial: https://github.com/karned-rekipe/arclith/blob/main/docs/tutorials/todo-list/03-create-usecase.md
-# - Arclith architecture: https://github.com/karned-rekipe/arclith/blob/main/arclith/docs/architecture.md
+# - Arclith use case tutorial: https://github.com/karned-agency/arclith/blob/main/docs/tutorials/todo-list/03-create-usecase.md
+# - Arclith architecture: https://github.com/karned-agency/arclith/blob/main/arclith/docs/architecture.md
 # - Pydantic models: https://docs.pydantic.dev/latest/concepts/models/
 # - Pydantic fields: https://docs.pydantic.dev/latest/concepts/fields/
 
@@ -118,8 +118,8 @@ from abc import ABC, abstractmethod
 from pydantic import BaseModel
 
 # Guides:
-# - Arclith use case tutorial: https://github.com/karned-rekipe/arclith/blob/main/docs/tutorials/todo-list/03-create-usecase.md
-# - Arclith architecture: https://github.com/karned-rekipe/arclith/blob/main/arclith/docs/architecture.md
+# - Arclith use case tutorial: https://github.com/karned-agency/arclith/blob/main/docs/tutorials/todo-list/03-create-usecase.md
+# - Arclith architecture: https://github.com/karned-agency/arclith/blob/main/arclith/docs/architecture.md
 # - Pydantic models: https://docs.pydantic.dev/latest/concepts/models/
 # - Pydantic fields: https://docs.pydantic.dev/latest/concepts/fields/
 

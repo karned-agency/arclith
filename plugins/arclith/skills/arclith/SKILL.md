@@ -3,7 +3,7 @@ name: arclith
 description: Initialize or evolve an Arclith project through its official CLI, blueprints, and capability catalog while preserving hexagonal boundaries. Use for broad Arclith requests, new services, entities, use cases, adapters, or when deciding which specialized Arclith workflow applies.
 license: Apache-2.0
 metadata:
-  author: karned-rekipe
+  author: karned-agency
   version: "0.1.0"
 ---
 

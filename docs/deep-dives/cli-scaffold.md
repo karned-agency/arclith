@@ -393,5 +393,5 @@ ajouter seulement les ports outbound réellement nécessaires à l'orchestration
 
 - [Créer une entité Todo](../tutorials/todo-list/02-create-entity.md)
 - [Créer les use cases Todo](../tutorials/todo-list/03-create-usecase.md)
-- [Architecture Arclith](https://github.com/karned-rekipe/arclith/blob/main/arclith/docs/architecture.md)
+- [Architecture Arclith](https://github.com/karned-agency/arclith/blob/main/arclith/docs/architecture.md)
 - [Décisions Arclith](../decisions.md)

@@ -9,10 +9,10 @@ LM Studio, LangSmith, MongoDB et OpenTelemetry autour.
 ## Projet téléchargeable
 
 Le dépôt complet du tutoriel est disponible ici:
-<https://github.com/karned-rekipe/arclith-POC-todo>.
+<https://github.com/karned-agency/arclith-POC-todo>.
 
 ```bash
-git clone https://github.com/karned-rekipe/arclith-POC-todo.git
+git clone https://github.com/karned-agency/arclith-POC-todo.git
 cd arclith-POC-todo
 uv sync
 uv run python -m pytest

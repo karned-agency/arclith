@@ -20,7 +20,7 @@ par défaut.
     - **Miss** → exécute la requête, cache la réponse si 2xx
 3. Requêtes suivantes avec la même clé retournent la réponse cachée
 
-**Configuration (_sample/config/http.yaml):**
+**Configuration (`arclith-reference/config/http.yaml`):**
 
 ```yaml
 idempotency:

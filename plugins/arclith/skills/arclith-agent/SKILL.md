@@ -3,7 +3,7 @@ name: arclith-agent
 description: Create or evolve an Arclith agent with LangGraph, typed state, application ports, optional LLM providers, persistence, tools, and observability. Use for agent graphs, AI workflows, LLM configuration, memory, checkpoints, Agent Server, and production agent runtime requests.
 license: Apache-2.0
 metadata:
-  author: karned-rekipe
+  author: karned-agency
   version: "0.1.0"
 ---
 

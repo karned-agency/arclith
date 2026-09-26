@@ -19,7 +19,7 @@ mais créer un workload par responsabilité:
 Publier une image versionnée:
 
 ```bash
-IMAGE=ghcr.io/karned-rekipe/my-service:0.1.0
+IMAGE=ghcr.io/karned-agency/my-service:0.1.0
 docker build -t "$IMAGE" .
 docker push "$IMAGE"
 ```
@@ -27,7 +27,7 @@ docker push "$IMAGE"
 En production, pin un digest si la plateforme le permet:
 
 ```text
-ghcr.io/karned-rekipe/my-service@sha256:<digest>
+ghcr.io/karned-agency/my-service@sha256:<digest>
 ```
 
 ## Config Et Secrets
@@ -114,7 +114,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: api
-          image: ghcr.io/karned-rekipe/my-service:0.1.0
+          image: ghcr.io/karned-agency/my-service:0.1.0
           args: ["api"]
           ports:
             - name: http
@@ -207,7 +207,7 @@ spec:
         fsGroup: 1001
       containers:
         - name: api
-          image: ghcr.io/karned-rekipe/my-service:0.1.0
+          image: ghcr.io/karned-agency/my-service:0.1.0
           volumeMounts:
             - name: tmp
               mountPath: /tmp
@@ -232,7 +232,7 @@ MCP réutilise l'image avec un autre argument:
 ```yaml
 containers:
   - name: mcp
-    image: ghcr.io/karned-rekipe/my-service:0.1.0
+    image: ghcr.io/karned-agency/my-service:0.1.0
     args: ["mcp_http"]
     ports:
       - name: mcp
@@ -246,7 +246,7 @@ Agent:
 ```yaml
 containers:
   - name: agent
-    image: ghcr.io/karned-rekipe/my-service:0.1.0
+    image: ghcr.io/karned-agency/my-service:0.1.0
     args: ["agent"]
     env:
       - name: LANGGRAPH_HOST
@@ -266,7 +266,7 @@ Worker RabbitMQ:
 ```yaml
 containers:
   - name: worker
-    image: ghcr.io/karned-rekipe/my-service:0.1.0
+    image: ghcr.io/karned-agency/my-service:0.1.0
     args: ["bus"]
     envFrom:
       - secretRef:

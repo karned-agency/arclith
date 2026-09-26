@@ -5,7 +5,7 @@ peut être suivie et contrôlée. Il fournit une requête et un résultat typés
 opérations `submit`, `get_status`, `cancel`, `retry`, `get_result`, un handler
 métier à compléter et des tests avec un fake déterministe.
 
-Cette capacité est développée dans l'[issue #224](https://github.com/karned-rekipe/arclith/issues/224).
+Cette capacité est développée dans l'[issue #224](https://github.com/karned-agency/arclith/issues/224).
 Elle est disponible à partir d’Arclith **0.32.0** et d’arclith-cli **0.29.0**,
 publiés selon le [processus de release](../release.md).
 

@@ -3,7 +3,7 @@ name: arclith-audit
 description: Audit an existing Arclith project for architecture, CLI provenance, manifests, configuration, tests, transport contracts, persistence guarantees, security, and deployment readiness. Use for reviews, migrations, health checks, upgrade planning, or diagnosing an Arclith project; remain read-only unless fixes are requested.
 license: Apache-2.0
 metadata:
-  author: karned-rekipe
+  author: karned-agency
   version: "0.1.0"
 ---
 

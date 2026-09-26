@@ -49,8 +49,8 @@ Use the recipe for provenance and replay, not as a substitute for inspecting cur
 
 ## Authoritative documentation
 
-- Overview: <https://karned-rekipe.github.io/arclith/>
-- CLI guide: <https://karned-rekipe.github.io/arclith/cli-guide/>
-- Capabilities: <https://karned-rekipe.github.io/arclith/capabilities/>
-- Application blueprints: <https://karned-rekipe.github.io/arclith/blueprints/>
-- Quickstarts: <https://karned-rekipe.github.io/arclith/quickstarts/>
+- Overview: <https://arclith.karned.bzh/>
+- CLI guide: <https://arclith.karned.bzh/cli-guide/>
+- Capabilities: <https://arclith.karned.bzh/capabilities/>
+- Application blueprints: <https://arclith.karned.bzh/blueprints/>
+- Quickstarts: <https://arclith.karned.bzh/quickstarts/>

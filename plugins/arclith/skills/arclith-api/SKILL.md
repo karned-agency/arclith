@@ -3,7 +3,7 @@ name: arclith-api
 description: Create or change an Arclith inbound surface such as FastAPI, FastMCP, or RabbitMQ while keeping protocol mapping outside the domain. Use for REST APIs, OpenAPI, MCP tools, message commands, endpoint exposure, HTTP contracts, auth, probes, and transport smoke tests.
 license: Apache-2.0
 metadata:
-  author: karned-rekipe
+  author: karned-agency
   version: "0.1.0"
 ---
 

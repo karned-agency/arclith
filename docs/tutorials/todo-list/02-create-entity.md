@@ -42,8 +42,8 @@ from __future__ import annotations
 from arclith.domain.models.entity import Entity
 
 # Guides:
-# - Arclith entity tutorial: https://github.com/karned-rekipe/arclith/blob/main/docs/tutorials/todo-list/02-create-entity.md
-# - Arclith architecture: https://github.com/karned-rekipe/arclith/blob/main/arclith/docs/architecture.md
+# - Arclith entity tutorial: https://github.com/karned-agency/arclith/blob/main/docs/tutorials/todo-list/02-create-entity.md
+# - Arclith architecture: https://github.com/karned-agency/arclith/blob/main/arclith/docs/architecture.md
 # - Pydantic models: https://docs.pydantic.dev/latest/concepts/models/
 # - Pydantic fields: https://docs.pydantic.dev/latest/concepts/fields/
 # - Pydantic validators: https://docs.pydantic.dev/latest/concepts/validators/

@@ -48,7 +48,7 @@ dans les prompts du plugin.
 Ajouter le dépôt comme marketplace, puis installer le plugin :
 
 ```bash
-codex plugin marketplace add karned-rekipe/arclith --ref main
+codex plugin marketplace add karned-agency/arclith --ref main
 codex plugin add arclith@arclith
 ```
 
@@ -69,7 +69,7 @@ correspond à sa description.
 Le même dépôt est une marketplace Claude Code :
 
 ```bash
-claude plugin marketplace add karned-rekipe/arclith
+claude plugin marketplace add karned-agency/arclith
 claude plugin install arclith@arclith
 ```
 

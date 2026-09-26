@@ -29,7 +29,7 @@
   "src/compat_sync/domain/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
   "src/compat_sync/domain/events/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
   "src/compat_sync/domain/models/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-  "src/compat_sync/domain/models/customer.py": "220280e09c10eea0c476970530d8d41913880e1efd0e6d5361382ae12162d0b5",
+  "src/compat_sync/domain/models/customer.py": "0adacc7078e9332d98f1b88fd94099c2941f52efe348309a6a2c9393a1298f44",
   "src/compat_sync/domain/models/customer_sync.py": "06aeee0a406c4ae84312e3da295d6947ee8965be2b232c644732910a8d818968",
   "src/compat_sync/domain/ports/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
   "src/compat_sync/domain/ports/inbound/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",

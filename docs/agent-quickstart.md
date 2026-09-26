@@ -35,7 +35,7 @@ Pour les commandes à jour de validation hors ligne LM Studio + LangGraph, voir
 Installer la CLI depuis le repository:
 
 ```bash
-uv tool install "git+https://github.com/karned-rekipe/arclith.git#subdirectory=cli"
+uv tool install "git+https://github.com/karned-agency/arclith.git#subdirectory=cli"
 arclith-cli version
 ```
 
@@ -43,7 +43,7 @@ Pour tester une branche Arclith avant publication:
 
 ```bash
 uv tool install --force \
-  "git+https://github.com/karned-rekipe/arclith.git@<branche>#subdirectory=cli"
+  "git+https://github.com/karned-agency/arclith.git@<branche>#subdirectory=cli"
 ```
 
 ## 2. Créer l'entité et choisir les transports

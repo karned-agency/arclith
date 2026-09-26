@@ -4,10 +4,10 @@
   "description": "Portable workflows for building, exposing, auditing, and deploying Arclith services.",
   "author": {
     "name": "Killian KOPP",
-    "url": "https://github.com/karned-rekipe"
+    "url": "https://github.com/karned-agency"
   },
-  "homepage": "https://karned-rekipe.github.io/arclith/agent-toolkit/",
-  "repository": "https://github.com/karned-rekipe/arclith",
+  "homepage": "https://arclith.karned.bzh/agent-toolkit/",
+  "repository": "https://github.com/karned-agency/arclith",
   "license": "Apache-2.0",
   "keywords": [
     "arclith",

@@ -152,7 +152,9 @@ def new(
     template_dir: Annotated[
         Path | None,
         typer.Option(
-            "--template-dir", help="Répertoire local du template _sample", hidden=True
+            "--template-dir",
+            help="Répertoire local de l'implémentation arclith-reference",
+            hidden=True,
         ),
     ] = None,
     no_record: Annotated[
