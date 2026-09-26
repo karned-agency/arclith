@@ -1,0 +1,36 @@
+{
+  "name": "arclith",
+  "version": "0.1.0",
+  "description": "Portable workflows for building, exposing, auditing, and deploying Arclith services.",
+  "author": {
+    "name": "Killian KOPP",
+    "url": "https://github.com/karned-rekipe"
+  },
+  "homepage": "https://karned-rekipe.github.io/arclith/agent-toolkit/",
+  "repository": "https://github.com/karned-rekipe/arclith",
+  "license": "Apache-2.0",
+  "keywords": [
+    "arclith",
+    "hexagonal-architecture",
+    "python",
+    "coding-agents"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Arclith",
+    "shortDescription": "Build production-ready Arclith services",
+    "longDescription": "Initialize, extend, audit, and deploy Arclith projects with provider-neutral hexagonal boundaries and reproducible CLI workflows.",
+    "developerName": "Karned RekiPe",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://karned-rekipe.github.io/arclith/agent-toolkit/",
+    "defaultPrompt": [
+      "Use Arclith to initialize this service.",
+      "Create an API with Arclith.",
+      "Audit this Arclith project."
+    ]
+  }
+}

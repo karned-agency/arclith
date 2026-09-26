@@ -41,7 +41,7 @@ hide:
   <section class="academy-section" aria-labelledby="academy-categories-title">
     <div class="academy-section__header">
       <p class="academy-eyebrow">Parcours</p>
-      <h2 id="academy-categories-title">5 thèmes pour tout apprendre</h2>
+      <h2 id="academy-categories-title">6 thèmes pour tout apprendre</h2>
     </div>
 
     <div class="academy-grid academy-grid--categories">
@@ -78,6 +78,13 @@ hide:
         <span class="academy-card__kicker">Projets</span>
         <strong>Construire de A à Z</strong>
         <p>Réalisation end to end d'un projet concret avec domaine, API, MCP, agent et persistance.</p>
+      </a>
+
+      <a class="academy-card" href="agent-toolkit/">
+        <img src="assets/academy/reference.png" alt="" decoding="async" loading="lazy" />
+        <span class="academy-card__kicker">Agents de codage</span>
+        <strong>Installer les workflows Arclith</strong>
+        <p>Un plugin portable pour initialiser, exposer, auditer et déployer un projet avec Codex, Claude Code ou Agent Skills.</p>
       </a>
     </div>
   </section>

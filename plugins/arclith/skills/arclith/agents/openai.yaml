@@ -1,0 +1,4 @@
+interface:
+  display_name: "Arclith"
+  short_description: "Build an Arclith project correctly"
+  default_prompt: "Use $arclith to initialize or evolve this project with the appropriate Arclith workflow."
