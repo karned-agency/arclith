@@ -9,7 +9,7 @@ RabbitMQ. Le chemin reste hexagonal:
 RabbitMQ message
   -> CommandEnvelope
   -> CommandDispatcher
-  -> CommandHandler projet
+  -> méthode @command d'un usecase projet
   -> DTO / command applicative
   -> use case ou port inbound
 ```
@@ -61,25 +61,46 @@ rabbitmq:
 illimité; Arclith le refuse pour éviter qu'un worker accumule un nombre non borné de messages non
 ackés.
 
-## Handler
+## Handler — méthodes taguées `@command`
+
+Un usecase expose une ou plusieurs commandes en taguant directement ses méthodes ; aucune classe
+dédiée par commande n'est nécessaire :
 
 ```python
 from collections.abc import Mapping
 from typing import Any
 
-from arclith import CommandHandler
+from arclith import command, CommandDispatcher
 
 
-class CreateTodoCommandHandler(CommandHandler):
-    command_type = "todo.create"
+class TodoUsecases:
+    def __init__(self, repository) -> None:
+        self._repository = repository
 
-    def __init__(self, create_todo) -> None:
-        self._create_todo = create_todo
+    @command("todo.create")
+    async def create(self, payload: Mapping[str, Any], headers: Mapping[str, str]) -> None:
+        cmd = CreateTodoCommand.model_validate(payload)
+        await self._repository.create(cmd)
 
-    async def handle(self, payload: Mapping[str, Any], headers: Mapping[str, str]) -> None:
-        command = CreateTodoCommand.model_validate(payload)
-        await self._create_todo.execute(command)
+    @command("todo.update")
+    async def update(self, payload: Mapping[str, Any], headers: Mapping[str, str]) -> None:
+        cmd = UpdateTodoCommand.model_validate(payload)
+        await self._repository.update(cmd)
+
+
+dispatcher = CommandDispatcher(handlers=[TodoUsecases(todo_repository)])
+# dispatcher.command_types == ("todo.create", "todo.update")
 ```
+
+`command(name)` lève `ValueError` si le nom est vide — la déclaration de commande est obligatoire.
+`CommandDispatcher(handlers=[...])` appelle `register_handlers()` pour chaque objet de la liste : il
+scanne ses méthodes et n'enregistre que celles portant la métadonnée `@command`. Aucune classe
+parente n'est requise (duck-typing). Deux méthodes déclarant le même `command_type` (dans le même
+objet ou entre deux objets différents de la liste) lèvent `ValueError` à l'enregistrement
+(fail-fast).
+
+Ce pattern regroupe naturellement les opérations liées à une même ressource (`create`, `update`,
+`read`...) dans une seule classe, sans multiplier les classes à mesure que le projet grandit.
 
 Le handler peut lire `headers["correlation_id"]` et `headers["traceparent"]` pour relier logs,
 traces et messages. L'adapter RabbitMQ ajoute `correlation_id` à la publication si l'appelant n'en
@@ -90,11 +111,11 @@ fournit pas; il propage `traceparent` quand un span OpenTelemetry courant existe
 ```python
 from arclith import Arclith, CommandDispatcher
 
-from app.application.create_todo import CreateTodoCommandHandler, create_todo_use_case
+from app.application.todo_usecases import TodoUsecases
 
 arclith = Arclith("config")
-dispatcher = CommandDispatcher([
-    CreateTodoCommandHandler(create_todo_use_case),
+dispatcher = CommandDispatcher(handlers=[
+    TodoUsecases(todo_repository),
 ])
 
 

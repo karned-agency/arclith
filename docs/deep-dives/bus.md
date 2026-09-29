@@ -14,7 +14,7 @@ publisher
   -> RabbitMQ
   -> consumer
   -> CommandDispatcher
-  -> CommandHandler
+  -> méthode @command d'un usecase
   -> use case
 ```
 
@@ -50,13 +50,13 @@ commande. Il ne doit pas connaître le handler consommateur.
 ## Consumer
 
 ```python
-dispatcher = CommandDispatcher()
-dispatcher.register(CreateTodoCommandHandler(create_todo_use_case))
+dispatcher = CommandDispatcher(handlers=[TodoUsecases(todo_repository)])
 
 app.run_command_bus(dispatcher)
 ```
 
-Le handler transforme l'envelope en commande métier, puis appelle le use case.
+`TodoUsecases.create` (taguée `@command("todo.create")`) transforme l'envelope en commande métier,
+puis appelle le use case.
 
 ## Ack Et Retry
 

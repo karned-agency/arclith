@@ -10,8 +10,7 @@ from typing import Any
 import pytest
 
 from arclith.adapters.bidirectional.rabbitmq import RabbitMQCommandBus
-from arclith.application.command_bus import CommandDispatcher
-from arclith.domain.ports.inbound.command_bus import CommandHandler
+from arclith.application.command_bus import CommandDispatcher, command
 from arclith.domain.ports.outbound.observability import MetricPort, TracePort, TraceSpan
 from arclith.infrastructure.config import RabbitMQCommandBusSettings
 
@@ -140,21 +139,19 @@ class FakeIncomingMessage:
         self.nacked = requeue
 
 
-class RecordingHandler(CommandHandler):
-    command_type = "todo.create"
-
+class RecordingHandler:
     def __init__(self) -> None:
         self.calls: list[tuple[Mapping[str, Any], Mapping[str, str]]] = []
 
+    @command("todo.create")
     async def handle(
         self, payload: Mapping[str, Any], headers: Mapping[str, str]
     ) -> None:
         self.calls.append((payload, headers))
 
 
-class FailingHandler(CommandHandler):
-    command_type = "todo.create"
-
+class FailingHandler:
+    @command("todo.create")
     async def handle(
         self, payload: Mapping[str, Any], headers: Mapping[str, str]
     ) -> None:

@@ -73,14 +73,15 @@ Le publisher ajoute `command_type`, `correlation_id` et, si disponible,
 ```python
 from arclith.application.command_bus import CommandDispatcher
 
-dispatcher = CommandDispatcher()
-dispatcher.register(CreateTodoCommandHandler(create_todo_use_case))
+dispatcher = CommandDispatcher(handlers=[TodoUsecases(todo_repository)])
 
 app.run_command_bus(dispatcher)
 ```
 
-Le handler reçoit une `CommandEnvelope`, valide son payload, puis appelle un use
-case. Il ne doit pas contenir de logique métier lourde.
+Le usecase expose ses opérations via des méthodes taguées `@command("...")` — `CommandDispatcher`
+scanne l'objet et enregistre chaque méthode taguée automatiquement. Chaque méthode reçoit une
+`CommandEnvelope` (payload + headers), valide son payload, puis appelle un use case. Elle ne doit
+pas contenir de logique métier lourde.
 
 ## Garanties
 

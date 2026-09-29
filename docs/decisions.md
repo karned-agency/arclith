@@ -261,9 +261,9 @@ commandes vers d'autres workers. Le même adapter technique porte donc une surfa
 (`message -> handler -> use case`) et outbound (`publisher -> exchange`).
 
 **Décision :** déclarer une capability `command-bus` avec un layer explicite `bidirectional`.
-RabbitMQ reste un adapter optionnel derrière `arclith[rabbitmq]`. Le domaine expose seulement les
-ports `CommandHandler` et `CommandPublisher`; aucune dépendance aio-pika ne traverse vers le coeur
-métier. La config runtime est portée par `config/command_bus.yaml` et `AppConfig.command_bus`.
+RabbitMQ reste un adapter optionnel derrière `arclith[rabbitmq]`. Le domaine expose seulement le
+port `CommandPublisher`; aucune dépendance aio-pika ne traverse vers le coeur métier. La config
+runtime est portée par `config/command_bus.yaml` et `AppConfig.command_bus`.
 
 **Pourquoi pas l'alternative évidente (classer RabbitMQ uniquement inbound ou outbound) :**
 Un worker RabbitMQ consomme et peut publier des commandes critiques avec le même channel fiable.
@@ -273,12 +273,23 @@ contourner les use cases.
 
 **Conséquence sur le code :**
 
-- `CommandDispatcher` mappe `CommandEnvelope.command_type` vers un `CommandHandler` projet.
+- `CommandDispatcher` mappe `CommandEnvelope.command_type` vers une méthode de usecase taguée
+  `@command(...)` (voir addendum 2026-09-15 ci-dessous).
 - Les handlers transforment le payload en DTO/command applicative, puis appellent un use case ou port
   inbound.
 - `RabbitMQCommandBus` utilise ack manuel, publisher confirms, prefetch strictement positif et DLX
   configurable.
 - `Arclith.run_command_bus(dispatcher)` fournit un runner bloquant compatible worker Docker.
+
+**Addendum (2026-09-15) — retrait de `CommandHandler` au profit de `@command` :** le port
+`CommandHandler` (ABC, une classe par commande) est **supprimé** (breaking change, pas de période de
+dépréciation — la lib est encore en alpha `0.x`). `CommandDispatcher.register_handlers(obj)` scanne
+désormais n'importe quel objet via `inspect.getmembers` et enregistre chaque méthode taguée
+`@command("...")`. Motivation : un projet en évolution constante ajoute des commandes bien plus
+souvent qu'il ne change de couche d'infrastructure ; imposer une classe dédiée par commande
+multipliait les fichiers pour un gain nul. Un usecase (`TodoUsecases`) peut désormais exposer
+plusieurs commandes (`create`, `update`, `read`...) dans une seule classe. Le générateur
+`arclith-cli` (`binding_rendering.py::_rabbitmq`) est mis à jour pour émettre ce nouveau pattern.
 
 ---
 
