@@ -479,16 +479,14 @@ def _rabbitmq(contract: UseCaseContract, options: BindingOptions) -> str:
     return extra + dedent(f"""
         from collections.abc import Mapping
         from typing import Any
-        from arclith.application.command_bus import CommandDispatcher
-        from arclith.domain.ports.inbound.command_bus import CommandHandler
+        from arclith.application.command_bus import CommandDispatcher, command
 
 
-        class Handler(CommandHandler):
-            command_type = {json.dumps(options.command_type)}
-
+        class Handler:
             def __init__(self, use_case: {contract.port}) -> None:
                 self._use_case = use_case
 
+            @command({json.dumps(options.command_type)})
             async def handle(
                 self,
                 payload: Mapping[str, Any],
@@ -500,7 +498,7 @@ def _rabbitmq(contract: UseCaseContract, options: BindingOptions) -> str:
 
 
         def register(dispatcher: CommandDispatcher, use_case: {contract.port}) -> None:
-            dispatcher.register(Handler(use_case))
+            dispatcher.register_handlers(Handler(use_case))
     """)
 
 

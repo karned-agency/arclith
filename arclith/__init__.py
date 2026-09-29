@@ -66,7 +66,7 @@ from arclith.adapters.outbound.relational import (
 )
 from arclith.adapters.outbound.s3 import S3FileStorage, S3StorageConfig
 from arclith.application.channel import ChannelDispatcher
-from arclith.application.command_bus import CommandDispatcher, CommandEnvelope
+from arclith.application.command_bus import CommandDispatcher, CommandEnvelope, command
 from arclith.application.services.base_service import BaseService
 from arclith.arclith import Arclith
 from arclith.domain.errors.channel import (
@@ -92,7 +92,6 @@ from arclith.domain.models.channel import (
 from arclith.domain.models.entity import Entity
 from arclith.domain.models.immutable_record import ImmutableRecord
 from arclith.domain.ports.inbound.channel import ChannelMessageHandler
-from arclith.domain.ports.inbound.command_bus import CommandHandler
 from arclith.domain.ports.outbound.channel import (
     ChannelEventStore,
     ChannelIdentityResolver,
@@ -347,8 +346,8 @@ __all__ = [
     "BaseService",
     "CommandDispatcher",
     "CommandEnvelope",
-    "CommandHandler",
     "CommandPublisher",
+    "command",
     "BaseSchema",
     "ConsoleLogger",
     "InMemoryRepository",

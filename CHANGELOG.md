@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+### Changed — BREAKING
+
+- **Command bus : retrait de `CommandHandler`** — le port `CommandHandler` (ABC, une classe par
+  commande) est supprimé sans période de dépréciation. `CommandDispatcher` n'accepte plus que des
+  objets scannés via `register_handlers()` : toute méthode taguée `@command("...")` devient
+  automatiquement un handler. Un usecase peut désormais exposer plusieurs commandes
+  (`create`/`update`/`read`...) dans une seule classe. `CommandDispatcher.register(command_type,
+  method)` remplace `register(handler)`. Le générateur `arclith-cli` (binding `rabbitmq`) est mis à
+  jour pour émettre ce nouveau pattern. Migration : remplacer chaque `class XCommandHandler
+  (CommandHandler): command_type = "..."` par une méthode `@command("...")` sur la classe usecase
+  concernée.
+
 ---
 
 ## [0.30.0] — 2026-09-14
