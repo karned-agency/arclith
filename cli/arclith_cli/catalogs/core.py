@@ -99,7 +99,7 @@ LOGGER_CAPABILITY = CapabilitySpec(
             name="console",
             capability="logger",
             layer="outbound",
-            description="Logger console Loguru enrichi avec les métadonnées OpenTelemetry courantes.",
+            description="JSON natif Loguru avec composant appelant et métadonnées OpenTelemetry courantes.",
             entity_scoped=False,
         ),
     ),

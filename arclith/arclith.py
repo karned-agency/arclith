@@ -91,10 +91,12 @@ class _UvicornLogInterceptHandler(logging.Handler):
             injected = self._correlation.from_log_record(record)
             if not injected:
                 injected = self._correlation.current()
+        metadata = dict(injected)
+        metadata["component"] = record.name
         self._logger.log(
             _LEVEL_MAP.get(record.levelname, LogLevel.INFO),
             message,
-            **injected,
+            **metadata,
         )
 
 
