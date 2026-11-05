@@ -41,7 +41,7 @@ arclith-cli capabilities --json
 | [repository](capabilities/repository.md) | outbound | `memory`, `mongodb`, `duckdb`, `mariadb`, `postgresql` | choisir les garanties, router par entité et opter pour un mapping PostgreSQL structuré |
 | [storage](capabilities/storage.md) | outbound | `filesystem`, `s3`, `azure-blob`, `gcs` | stocker fichiers et blobs |
 | [cache](capabilities/cache.md) | outbound | `memory`, `redis` | partager JWKS, tenants et idempotence |
-| [logger](capabilities/logger.md) | outbound | `console` | standardiser les logs |
+| [logger](capabilities/logger.md) | outbound | `console` | produire du JSON natif Loguru et identifier le composant émetteur |
 | [secrets](capabilities/secrets.md) | outbound | `env`, `yaml`, `vault`, `chain` | résoudre les secrets |
 | [llm](capabilities/llm.md) | outbound | `lmstudio`, `openai`, `anthropic` | configurer les modèles |
 | [embedding](capabilities/embedding.md) | outbound | `deterministic`, `openai-compatible`, `openai` | calculer des vecteurs texte sans les persister |
