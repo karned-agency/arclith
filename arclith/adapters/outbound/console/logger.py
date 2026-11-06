@@ -1,3 +1,4 @@
+import inspect
 import sys
 from typing import Any
 
@@ -17,10 +18,10 @@ _LEVEL_EMOJI = {
     "CRITICAL": "🔥",
 }
 
-_FORMAT = "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | {extra[level_emoji]} <level>{level: <8}</level> | <level>{message}</level> | {extra[meta]}"
+_FORMAT = "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | {extra[level_emoji]} <level>{level: <8}</level> | {extra[component]} | <level>{message}</level> | {extra[meta]}"
 
 loguru_logger.remove()
-loguru_logger.add(sys.stderr, format=_FORMAT)
+loguru_logger.add(sys.stderr, format=_FORMAT, serialize=True, colorize=False)
 
 
 class ConsoleLogger(Logger):
@@ -44,7 +45,29 @@ class ConsoleLogger(Logger):
         emoji = _LEVEL_EMOJI.get(level.value, "💬")
         correlation = dict(self._correlation.current()) if self._correlation else {}
         attributes = {**metadata, **correlation}
-        bound = loguru_logger.bind(level_emoji=emoji, meta=attributes)
+        component = attributes.get("component")
+        if not isinstance(component, str) or not component:
+            component = self.class_which_called_me()
+        bound = loguru_logger.bind(
+            level_emoji=emoji, component=component, meta=attributes
+        )
         getattr(bound, level.value.lower())(message)
         if self._log_records is not None:
-            self._log_records.emit(level.value, message, attributes=attributes)
+            self._log_records.emit(
+                level.value,
+                message,
+                attributes={**attributes, "component": component},
+            )
+
+    @staticmethod
+    def class_which_called_me() -> str:
+        frame = inspect.currentframe()
+        try:
+            while frame is not None:
+                instance = frame.f_locals.get("self")
+                if instance is not None and not isinstance(instance, Logger):
+                    return type(instance).__name__
+                frame = frame.f_back
+        finally:
+            del frame
+        return "Global"
