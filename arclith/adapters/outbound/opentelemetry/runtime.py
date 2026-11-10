@@ -92,7 +92,9 @@ class OpenTelemetryRuntime(_OpenTelemetryProviderLifecycle, ObservabilityRuntime
         self._logs = OpenTelemetryLogRecordAdapter(
             ensure_started=self.start,
             handler=lambda: self._log_handler,
-            enabled=lambda: self._started and self._signal_enabled("logs"),
+            enabled=lambda: (
+                self._started and not self._closed and self._signal_enabled("logs")
+            ),
         )
 
     @property
