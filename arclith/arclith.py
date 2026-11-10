@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import logging
 import threading
-import traceback
 from collections.abc import Awaitable, Callable, Mapping, Sequence
 from functools import cached_property
 from pathlib import Path
@@ -14,9 +13,8 @@ from arclith.domain.models.entity import Entity
 from arclith.domain.ports.outbound.channel import ChannelSender
 from arclith.domain.ports.outbound.embedding import EmbeddingPort
 from arclith.domain.ports.outbound.file_storage import FileStoragePort
-from arclith.domain.ports.outbound.logger import Logger, LogLevel
+from arclith.domain.ports.outbound.logger import Logger
 from arclith.domain.ports.outbound.observability import (
-    CorrelationContextPort,
     MetricPort,
     ObservabilityRuntimePort,
     TraceAnonymizer,
@@ -38,6 +36,9 @@ from arclith.infrastructure.langgraph_bootstrap import (
 )
 from arclith.infrastructure.repository_factory import RepositoryRegistry
 from arclith.infrastructure.vector_store_factory import VectorStoreRegistry
+from arclith.infrastructure.uvicorn_logging import (
+    UvicornLogInterceptHandler as _UvicornLogInterceptHandler,
+)
 
 if TYPE_CHECKING:
     import fastmcp as _fastmcp
@@ -61,41 +62,6 @@ _UVICORN_LOG_CONFIG: dict[str, Any] = {
         "uvicorn.error": {"handlers": [], "propagate": False},
     },
 }
-_LEVEL_MAP: dict[str, LogLevel] = {
-    "DEBUG": LogLevel.DEBUG,
-    "INFO": LogLevel.INFO,
-    "WARNING": LogLevel.WARNING,
-    "ERROR": LogLevel.ERROR,
-    "CRITICAL": LogLevel.CRITICAL,
-}
-
-
-class _UvicornLogInterceptHandler(logging.Handler):
-    def __init__(
-        self,
-        logger: Logger,
-        correlation: CorrelationContextPort | None = None,
-    ) -> None:
-        super().__init__()
-        self._logger = logger
-        self._correlation = correlation
-
-    def emit(self, record: logging.LogRecord) -> None:
-        message = record.getMessage()
-        if record.exc_info:
-            exc = record.exc_info[1]
-            tb = "".join(traceback.format_exception(exc))
-            message = f"{message}\n{tb}"
-        injected: Mapping[str, str | bool] = {}
-        if self._correlation is not None:
-            injected = self._correlation.from_log_record(record)
-            if not injected:
-                injected = self._correlation.current()
-        self._logger.log(
-            _LEVEL_MAP.get(record.levelname, LogLevel.INFO),
-            message,
-            **injected,
-        )
 
 
 class Arclith:
