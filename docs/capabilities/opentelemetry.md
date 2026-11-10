@@ -229,6 +229,9 @@ Les batch queues et timeouts sont bornés. Une indisponibilité temporaire du Co
 fail-open ; une configuration invalide, une dépendance absente ou un conflit de provider échoue au
 démarrage.
 
+Après le shutdown, les derniers messages de cycle de vie (notamment ceux d'Uvicorn)
+restent journalisés localement, sans relancer le runtime ni exporter de nouveaux logs OTLP.
+
 ## Signaux et instrumentations
 
 ### Traces et propagation
@@ -247,6 +250,11 @@ HTTPX est instrumenté uniquement si `instrumentation.httpx` et les traces sont 
 désinstrumente le client au dernier shutdown et évite les doubles monkey-patches. Pour les deux
 instrumentations, Arclith remplace les attributs d'URL par une version sans query string ni
 fragment, quel que soit le nom du paramètre.
+
+Les access logs Uvicorn interceptés par Arclith retirent également la query string et le
+fragment de la cible HTTP avant formatage, pour les sorties locales comme pour l'export OTLP.
+Cette protection concerne le format d'access log standard d'Uvicorn ; les messages applicatifs
+personnalisés restent sous la responsabilité du projet consommateur.
 
 ### FastMCP
 
