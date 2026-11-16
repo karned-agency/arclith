@@ -36,7 +36,6 @@ from arclith.infrastructure.langgraph_bootstrap import (
 from arclith.infrastructure.repository_factory import RepositoryRegistry
 from arclith.infrastructure.uvicorn_logging import (
     UVICORN_LOG_CONFIG as _UVICORN_LOG_CONFIG,
-    UvicornLogInterceptHandler,
     setup_uvicorn_logging,
 )
 from arclith.infrastructure.vector_store_factory import VectorStoreRegistry
@@ -53,7 +52,6 @@ if TYPE_CHECKING:
 
 T = TypeVar("T", bound=Entity)
 R = TypeVar("R", bound=Repository[Any])
-_UvicornLogInterceptHandler = UvicornLogInterceptHandler
 
 
 class Arclith:

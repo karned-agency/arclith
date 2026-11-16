@@ -9,12 +9,12 @@ import pytest
 
 from arclith.adapters.outbound.console import logger as console_logger
 from arclith.adapters.outbound.console.logger import ConsoleLogger
-from arclith.arclith import _UvicornLogInterceptHandler
 from arclith.domain.ports.outbound.logger import LogLevel
 from arclith.domain.ports.outbound.observability import (
     CorrelationContextPort,
     LogRecordPort,
 )
+from arclith.infrastructure.uvicorn_logging import UvicornLogInterceptHandler
 
 
 @pytest.fixture
@@ -293,6 +293,6 @@ def test_intercepted_logger_name_is_used_as_component(
 ) -> None:
     record = logging.LogRecord(name, logging.INFO, __file__, 1, "server log", (), None)
 
-    _UvicornLogInterceptHandler(ConsoleLogger()).emit(record)
+    UvicornLogInterceptHandler(ConsoleLogger()).emit(record)
 
     assert json.loads(captured_logs[0])["record"]["extra"]["component"] == name

@@ -5,7 +5,6 @@ from typing import Any
 
 import pytest
 
-from arclith.arclith import _UvicornLogInterceptHandler
 from arclith.domain.ports.outbound.logger import Logger, LogLevel
 from arclith.infrastructure.uvicorn_logging import UvicornLogInterceptHandler
 
@@ -16,10 +15,6 @@ class CapturingLogger(Logger):
 
     def log(self, level: LogLevel, message: str, **metadata: Any) -> None:
         self.records.append({"level": level, "message": message, "metadata": metadata})
-
-
-def test_facade_preserves_log_handler_import() -> None:
-    assert _UvicornLogInterceptHandler is UvicornLogInterceptHandler
 
 
 @pytest.mark.parametrize(
