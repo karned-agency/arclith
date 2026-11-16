@@ -59,6 +59,9 @@ logger.info("worker started", component="external.worker")
 
 Les logs interceptés depuis Uvicorn et `watchfiles` utilisent le nom du logger
 source, par exemple `uvicorn.access`, plutôt que la classe du handler.
+La configuration et l'interception des logs serveur sont isolées dans
+`arclith.infrastructure.uvicorn_logging` ; leur activation reste automatique
+via le lifespan de `Arclith.fastapi()`.
 Le composant est lié dans `extra.component` de Loguru et transmis comme
 attribut `component` aux records OpenTelemetry lorsque l'export est activé.
 Les autres métadonnées et la priorité du contexte réel de corrélation sont
