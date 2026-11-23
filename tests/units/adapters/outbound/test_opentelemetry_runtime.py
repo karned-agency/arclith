@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import builtins
 import io
+import logging
 from typing import Any
 
 import pytest
@@ -106,6 +107,46 @@ def test_managed_runtime_is_idempotent_and_owns_shutdown(
     runtime.shutdown(2.0)
     runtime.shutdown(2.0)
     assert provider.shutdowns == 1
+
+
+def test_console_logging_after_runtime_shutdown_keeps_local_sink_only(
+    logger, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from opentelemetry.sdk._logs import LoggerProvider
+
+    from arclith.adapters.outbound.console.logger import ConsoleLogger
+
+    provider = LoggerProvider(shutdown_on_exit=False)
+    monkeypatch.setattr("opentelemetry._logs.get_logger_provider", lambda: provider)
+    runtime = OpenTelemetryRuntime(
+        _settings(mode="external", traces=False, logs=True),
+        logger,
+        service_name="demo",
+        service_version="1.0",
+    )
+    records: list[logging.LogRecord] = []
+    local_messages: list[str] = []
+    console = ConsoleLogger(runtime.correlation, runtime.logs)
+    from loguru import logger as loguru_logger
+
+    sink = loguru_logger.add(lambda message: local_messages.append(str(message)))
+    try:
+        runtime.start()
+        assert runtime._log_handler is not None
+        monkeypatch.setattr(runtime._log_handler, "emit", records.append)
+        console.info("before shutdown")
+        runtime.shutdown()
+        console.info("Application shutdown complete.")
+        console.info("Finished server process")
+
+        assert [record.getMessage() for record in records] == ["before shutdown"]
+        assert any("Application shutdown complete." in text for text in local_messages)
+        assert any("Finished server process" in text for text in local_messages)
+        assert runtime.diagnostics()["closed"] is True
+    finally:
+        runtime.shutdown()
+        provider.shutdown()
+        loguru_logger.remove(sink)
 
 
 def test_identical_managed_runtimes_share_providers_without_duplicates(

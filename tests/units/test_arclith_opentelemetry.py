@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 import yaml
+import pytest
 
 from arclith import Arclith
 from arclith.adapters.outbound.noop.observability import NoOpObservabilityRuntime
@@ -171,6 +172,57 @@ def test_uvicorn_log_interceptor_falls_back_to_current_context() -> None:
         "span_id": "0" * 15 + "4",
         "trace_sampled": False,
     }
+
+
+@pytest.mark.parametrize(
+    "target",
+    [
+        "/v1/todos?secret=private",
+        "/v1/todos#private",
+        "/v1/todos?secret=private#fragment",
+        "/v1/todos",
+    ],
+)
+def test_uvicorn_access_logs_strip_query_and_fragment_without_mutating_record(
+    target: str,
+) -> None:
+    logger = CapturingLogger()
+    args = ("127.0.0.1:1234", "POST", target, "1.1", 201)
+    record = logging.LogRecord(
+        "uvicorn.access",
+        logging.INFO,
+        __file__,
+        1,
+        '%s - "%s %s HTTP/%s" %d',
+        args,
+        None,
+    )
+
+    _UvicornLogInterceptHandler(logger, CurrentCorrelation()).emit(record)  # type: ignore[arg-type]
+
+    assert (
+        logger.records[0]["message"] == '127.0.0.1:1234 - "POST /v1/todos HTTP/1.1" 201'
+    )
+    assert logger.records[0]["metadata"]["trace_id"] == "0" * 31 + "3"
+    assert record.args == args
+    assert target in record.getMessage()
+
+
+def test_uvicorn_error_logs_preserve_unrelated_format_arguments() -> None:
+    logger = CapturingLogger()
+    record = logging.LogRecord(
+        "uvicorn.error",
+        logging.INFO,
+        __file__,
+        1,
+        "%s %s %s %s %s",
+        ("a", "b", "why?", "d", "e"),
+        None,
+    )
+
+    _UvicornLogInterceptHandler(logger).emit(record)
+
+    assert logger.records[0]["message"] == "a b why? d e"
 
 
 def test_base_import_does_not_load_opentelemetry_when_disabled() -> None:
