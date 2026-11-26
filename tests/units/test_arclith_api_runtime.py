@@ -5,6 +5,7 @@ import pytest
 import uvicorn
 
 from arclith import Arclith
+from arclith.infrastructure.uvicorn_logging import UVICORN_LOG_CONFIG
 
 
 def _config_dir(tmp_path: Path) -> Path:
@@ -31,6 +32,7 @@ def test_run_api_enables_reload_for_importable_factory(
     assert received["reload"] is True
     assert received["factory"] is True
     assert received["ws"] == "none"
+    assert received["log_config"] is UVICORN_LOG_CONFIG
 
 
 def test_run_api_disables_reload_for_application_instance(
@@ -52,3 +54,4 @@ def test_run_api_disables_reload_for_application_instance(
     assert received["reload"] is False
     assert received["factory"] is False
     assert received["ws"] == "none"
+    assert received["log_config"] is UVICORN_LOG_CONFIG

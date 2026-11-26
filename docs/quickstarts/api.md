@@ -65,6 +65,12 @@ curl -fsS -X POST http://127.0.0.1:8765/v1/todos \
 - La création retourne `201` avec `uuid`, dates d'audit, `version` et
   `is_deleted`, même sans champ métier supplémentaire.
 
+Les [logs console](../capabilities/logger.md#json-natif-et-recherche-loki) sont
+émis en JSON natif Loguru sur `stderr` et identifient
+automatiquement la classe appelante ; les logs HTTP interceptés conservent
+leur origine, par exemple `uvicorn.access`. Aucun argument supplémentaire
+n'est nécessaire dans les appels au logger.
+
 ## Variante CRUD Complète
 
 Pour exposer le cycle complet plutôt qu'un seul use case :

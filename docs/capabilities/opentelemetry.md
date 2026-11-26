@@ -286,10 +286,16 @@ HTTP de métriques lorsqu'un événement est déjà produit par l'instrumentatio
 `signals.logs.correlate` enrichit les logs locaux avec `trace_id`, `span_id` et le sampling flag.
 `signals.logs.enabled` exporte en plus des records OTLP via batch processor.
 
-Le logger Loguru existant reste la sortie console. Arclith émet les records OTLP explicitement via
+Le logger Loguru produit du JSON natif sur la sortie console. Arclith émet les records OTLP explicitement via
 un handler dédié et ne modifie pas le root logger, ce qui évite les doubles émissions et les boucles
 avec les logs internes de l'exporter. Les logs OpenTelemetry Python restent un signal en évolution :
 garder l'export en opt-in et valider le backend avant production.
+
+Chaque record émis par le [logger console](logger.md#composant-emetteur) reçoit aussi l'attribut
+`component` : classe appelante pour les logs applicatifs, nom du logger source pour les logs
+interceptés depuis Uvicorn ou `watchfiles`.
+L'export OTLP conserve le message et les attributs structurés ; le JSON natif est uniquement
+le format de la sortie console.
 
 ## Confidentialité et cardinalité
 

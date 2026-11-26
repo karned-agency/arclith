@@ -11,11 +11,11 @@ import yaml
 from arclith import Arclith
 from arclith.adapters.outbound.noop.observability import NoOpObservabilityRuntime
 from arclith.adapters.outbound.opentelemetry.runtime import OpenTelemetryRuntime
-from arclith.arclith import _UvicornLogInterceptHandler
 from arclith.domain.ports.outbound.logger import Logger, LogLevel
 from arclith.infrastructure.observability_factory import (
     CompositeObservabilityRuntime,
 )
+from arclith.infrastructure.uvicorn_logging import UvicornLogInterceptHandler
 
 
 class CapturingLogger(Logger):
@@ -143,13 +143,14 @@ def test_uvicorn_log_interceptor_uses_neutral_correlation_port() -> None:
     record.otelSpanID = "0" * 15 + "2"
     record.otelTraceSampled = True
 
-    _UvicornLogInterceptHandler(logger, InjectedCorrelation()).emit(record)  # type: ignore[arg-type]
+    UvicornLogInterceptHandler(logger, InjectedCorrelation()).emit(record)  # type: ignore[arg-type]
 
     assert logger.records == [
         {
             "level": LogLevel.INFO,
             "message": "request finished",
             "metadata": {
+                "component": "uvicorn.access",
                 "trace_id": "0" * 31 + "1",
                 "span_id": "0" * 15 + "2",
                 "trace_sampled": True,
@@ -164,9 +165,10 @@ def test_uvicorn_log_interceptor_falls_back_to_current_context() -> None:
         "uvicorn.access", logging.INFO, __file__, 1, "request finished", (), None
     )
 
-    _UvicornLogInterceptHandler(logger, CurrentCorrelation()).emit(record)  # type: ignore[arg-type]
+    UvicornLogInterceptHandler(logger, CurrentCorrelation()).emit(record)  # type: ignore[arg-type]
 
     assert logger.records[0]["metadata"] == {
+        "component": "uvicorn.access",
         "trace_id": "0" * 31 + "3",
         "span_id": "0" * 15 + "4",
         "trace_sampled": False,
