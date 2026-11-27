@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import keyword
 from dataclasses import dataclass, replace
 from pathlib import Path
 
@@ -14,6 +13,7 @@ from arclith_cli.application_blueprints import (
     render_application_blueprint,
 )
 from arclith_cli.entity_scanner import EntityInfo, scan_blueprint_models
+from arclith_cli.feature_names import normalize_public_feature_name
 from arclith_cli.feature_manifest import (
     FeatureDigests,
     FeatureManifest,
@@ -59,7 +59,7 @@ def plan_state_machine_migration(
 
     blueprint = get_application_blueprint("state-machine")
     entity = _require_entity(project_dir, entity_name)
-    feature = _feature_name(feature_name or entity.snake)
+    feature = normalize_public_feature_name(feature_name or entity.snake)
     manifest_path = project_dir / ".arclith" / "features" / f"{feature}.yaml"
     previous = load_feature_manifest(manifest_path)
     _validate_previous_manifest(previous, blueprint.name, blueprint.version, entity, feature)
@@ -226,13 +226,6 @@ def _require_entity(project_dir: Path, raw_name: str) -> EntityInfo:
     if entity is None:
         raise ValueError(f"State-machine migration entity was not found: {raw_name}")
     return entity
-
-
-def _feature_name(raw: str) -> str:
-    feature = raw.strip().lower().replace("-", "_")
-    if not feature.isidentifier() or feature.startswith("_") or keyword.iskeyword(feature):
-        raise ValueError(f"Invalid public feature name: {raw!r}")
-    return feature
 
 
 def _require_canonical_file(path: Path, *, expected: bytes, project_dir: Path) -> None:

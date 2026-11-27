@@ -7,6 +7,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from arclith_cli.feature_names import normalize_public_feature_name
 from arclith_cli.state_machine_migration import MIGRATION_KIND
 
 _SHA256_DIGEST = re.compile(r"^sha256:[0-9a-f]{64}$")
@@ -28,14 +29,21 @@ class MigrateBlueprintRecipeArgs(BaseModel):
     parameters: dict[str, object]
     parameters_digest: str
 
-    @field_validator("entity", "feature")
+    @field_validator("entity")
     @classmethod
-    def require_non_blank_name(cls, value: str) -> str:
-        """Reject names which only contain whitespace."""
+    def require_non_blank_entity(cls, value: str) -> str:
+        """Reject entity names which only contain whitespace."""
 
         if not value.strip():
             raise ValueError("must not be blank")
         return value
+
+    @field_validator("feature")
+    @classmethod
+    def normalize_feature(cls, value: str) -> str:
+        """Apply the shared public-feature contract before replay planning."""
+
+        return normalize_public_feature_name(value)
 
     @field_validator("migration")
     @classmethod

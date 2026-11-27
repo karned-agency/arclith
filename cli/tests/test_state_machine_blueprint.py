@@ -108,6 +108,9 @@ def test_migration_recipe_contract_rejects_unknown_and_invalid_digest() -> None:
     parsed = parse_migrate_blueprint_recipe_args(args)
 
     assert parsed.model_dump(mode="python") == args
+    assert parse_migrate_blueprint_recipe_args(
+        {**args, "feature": "invoice-lifecycle"}
+    ).feature == "invoice_lifecycle"
     validate_application_blueprint_recipe_step("migrate-blueprint", args)
     with pytest.raises(RecipeError, match="extra_forbidden"):
         validate_application_blueprint_recipe_step(
@@ -2944,6 +2947,23 @@ def test_additive_migration_recipe_replays_from_an_initial_state_machine(
         replay_target
         / "src/invoice_service/application/use_cases/reopen_invoice.py"
     ).is_file()
+
+    invalid_migration = replace(
+        recipe.steps[-1],
+        args={**recipe.steps[-1].args, "feature": "_invalid"},
+    )
+    invalid_recipe = replace(recipe, steps=(*recipe.steps[:-1], invalid_migration))
+    invalid_target = tmp_path / "invalid-feature-replay"
+
+    with pytest.raises(RecipeError, match="Invalid public feature name"):
+        replay_recipe(
+            invalid_recipe,
+            invalid_recipe.steps,
+            target_dir=invalid_target,
+            strict=True,
+        )
+
+    assert not invalid_target.exists()
 
 
 def test_profile_collision_is_atomic_and_recipe_replay_needs_no_spec_file(
