@@ -16,6 +16,11 @@ from arclith_cli.core_scaffold import add_entity_cmd
 from arclith_cli.project_paths import detect_project_paths
 from arclith_cli.recipe_models import RecipeError
 from arclith_cli.state_machine_entity import render_state_machine_entity
+from arclith_cli.state_machine_migration import (
+    MIGRATION_KIND,
+    apply_state_machine_migration,
+    plan_state_machine_migration,
+)
 from arclith_cli.state_machine_spec import StateMachineSpec
 
 
@@ -30,6 +35,9 @@ def replay_application_blueprint_step(
         return
     if command == "add-blueprint":
         replay_add_blueprint_step(target_dir, args)
+        return
+    if command == "migrate-blueprint":
+        replay_migrate_blueprint_step(target_dir, args)
         return
     raise ValueError(f"Unsupported application blueprint recipe command: {command}")
 
@@ -79,6 +87,39 @@ def replay_add_blueprint_step(target_dir: Path, args: dict[str, Any]) -> None:
         dry_run=False,
         parameters=parameters,
     )
+
+
+def replay_migrate_blueprint_step(target_dir: Path, args: dict[str, Any]) -> None:
+    """Replay one explicit additive state-machine migration."""
+
+    blueprint_name = required_recipe_blueprint_name(args)
+    if blueprint_name != "state-machine":
+        raise RecipeError("Only state-machine blueprint migrations are supported")
+    if args.get("migration") != MIGRATION_KIND:
+        raise RecipeError("Recipe state-machine migration has an unsupported migration kind")
+    validate_application_recipe_metadata(blueprint_name, args)
+    source_digest = args.get("from_parameters_digest")
+    if not isinstance(source_digest, str) or not source_digest.startswith("sha256:"):
+        raise RecipeError("Recipe state-machine migration requires from_parameters_digest")
+    raw_parameters = args.get("parameters")
+    if not isinstance(raw_parameters, dict):
+        raise RecipeError("Recipe state-machine migration requires parameters")
+    entity = args.get("entity")
+    if not isinstance(entity, str) or not entity.strip():
+        raise RecipeError("Recipe state-machine migration requires an entity")
+    feature = args.get("feature")
+    if not isinstance(feature, str) or not feature.strip():
+        raise RecipeError("Recipe state-machine migration requires a feature")
+    plan = plan_state_machine_migration(
+        target_dir,
+        entity_name=entity,
+        feature_name=feature,
+        parameters=raw_parameters,
+    )
+    previous_digests = plan.previous_manifest.digests
+    if previous_digests is None or previous_digests.parameters != source_digest:
+        raise RecipeError("Recipe state-machine migration source digest does not match")
+    apply_state_machine_migration(plan)
 
 
 def required_recipe_blueprint_name(args: dict[str, Any]) -> str:

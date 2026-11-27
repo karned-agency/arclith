@@ -35,6 +35,7 @@ _SUPPORTED_COMMANDS = {
     "new",
     "add-adapter",
     "add-blueprint",
+    "migrate-blueprint",
     "add-entity",
     "add-usecase",
     "add-intent-interpreter",
@@ -243,7 +244,7 @@ def _validate_application_blueprint_replay_metadata(
         blueprint_name: str | None = None
         if step.command in {"new", "add-entity"}:
             blueprint_name = str(args.get("profile", "minimal"))
-        elif step.command == "add-blueprint":
+        elif step.command in {"add-blueprint", "migrate-blueprint"}:
             blueprint_name = required_recipe_blueprint_name(args)
         if blueprint_name is not None:
             validate_application_recipe_metadata(blueprint_name, args)
@@ -333,7 +334,7 @@ def _execute_step(
         raise RecipeError(
             f"Replay target does not exist before step {step.id}: {target_dir}"
         )
-    if step.command in {"add-entity", "add-blueprint"}:
+    if step.command in {"add-entity", "add-blueprint", "migrate-blueprint"}:
         from arclith_cli.application_blueprint_recipe import (
             replay_application_blueprint_step,
         )

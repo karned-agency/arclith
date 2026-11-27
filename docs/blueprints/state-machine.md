@@ -477,19 +477,51 @@ restent lus sans conversion vers V2.
 
 ## Faire Évoluer Une Machine En Production
 
-Ajouter un état ou une transition change un contrat persistant. Avant de
-modifier la spec d'une feature déjà installée :
+Ajouter un état ou une transition change un contrat persistant. Avant toute
+évolution, inventorier les valeurs stockées dans tous les environnements,
+décider comment elles restent lisibles, puis versionner les consommateurs de
+messages et d'API concernés.
 
-1. inventorier les valeurs stockées dans tous les environnements ;
-2. décider comment les anciennes valeurs restent lisibles ;
-3. écrire une migration explicite et réversible si nécessaire ;
-4. versionner les consommateurs de messages ou d'API concernés ;
-5. installer une nouvelle feature ou résoudre explicitement le manifeste.
+### Ajouter une transition entre des états déjà existants
 
-Ne jamais renommer ou supprimer un état en comptant sur une régénération
-silencieuse. Le blueprint préserve volontairement le code et refuse le drift ;
-Git et la stratégie de migration du projet restent les sources de vérité pour
-cette évolution.
+`add-blueprint` reste idempotent : il refuse volontairement une spec différente
+du manifeste déjà installé. Pour le cas précis où l'on **ajoute** une ou plusieurs
+transitions entre les états existants, utiliser une migration explicite :
+
+```bash
+arclith-cli migrate-blueprint state-machine \
+  --entity Invoice \
+  --feature invoice_lifecycle \
+  --spec invoice-lifecycle-v2.yaml \
+  --dry-run
+
+arclith-cli migrate-blueprint state-machine \
+  --entity Invoice \
+  --feature invoice_lifecycle \
+  --spec invoice-lifecycle-v2.yaml
+```
+
+La migration accepte uniquement une extension additive : le champ d'état,
+l'état initial, l'ensemble des états et chaque transition déjà déclarée doivent
+être identiques. Elle ajoute les ports et use cases des nouveaux verbes, met à
+jour les artefacts générés communs et réécrit le manifeste V2 avec les nouveaux
+digests. La recette enregistre aussi le digest de paramètres source et le
+digest cible ; le replay reconstitue donc les deux étapes dans le bon ordre.
+
+Avant d'écrire, Arclith vérifie que son renderer correspond toujours au digest
+du template installé et que chaque artefact commun à remplacer est exactement
+sa version générée précédente. Un fichier modifié par le projet est refusé, il
+n'est jamais écrasé. Les fichiers de verbes existants ne sont pas modifiés.
+`--dry-run` affiche distinctement les créations, mises à jour et préservations.
+
+### Changements de contrat qui restent manuels
+
+Ajouter ou supprimer un état, renommer un état ou un verbe, modifier une
+transition existante, ou changer le champ d'état reste une migration métier
+manuelle. Écrire alors une migration de données explicite et réversible si
+nécessaire, conserver le changement dans Git, puis créer une nouvelle feature
+ou résoudre intentionnellement le manifeste. Ne jamais compter sur une
+régénération silencieuse pour transformer des données persistées.
 
 ## Formulation Prête Pour Un Agent
 

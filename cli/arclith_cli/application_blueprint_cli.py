@@ -25,6 +25,11 @@ from arclith_cli.core_scaffold import add_entity_cmd
 from arclith_cli.recipe import snapshot_project_files
 from arclith_cli.project_paths import detect_project_paths
 from arclith_cli.state_machine_entity import render_state_machine_entity
+from arclith_cli.state_machine_migration import (
+    MIGRATION_KIND,
+    apply_state_machine_migration,
+    plan_state_machine_migration,
+)
 from arclith_cli.state_machine_spec import StateMachineSpec, load_state_machine_spec
 
 console = Console()
@@ -239,6 +244,110 @@ def add_blueprint_command(
                     }
                     if parameters is not None
                     else {}
+                ),
+            },
+            before=before,
+        )
+
+
+def migrate_blueprint_command(
+    blueprint: Annotated[
+        str,
+        typer.Argument(
+            help="Blueprint à migrer ; seule la migration additive state-machine est disponible."
+        ),
+    ],
+    entity: Annotated[
+        str,
+        typer.Option("--entity", "-e", help="Entité métier cible de la feature existante."),
+    ],
+    feature: Annotated[
+        str | None,
+        typer.Option("--feature", help="Nom stable de la feature existante."),
+    ] = None,
+    spec: Annotated[
+        Path | None,
+        typer.Option("--spec", help="Nouvelle spec YAML canonique de la state-machine."),
+    ] = None,
+    dry_run: Annotated[
+        bool,
+        typer.Option("--dry-run", help="Afficher la migration sans écrire de fichier."),
+    ] = False,
+    no_record: Annotated[
+        bool,
+        typer.Option("--no-record", hidden=True),
+    ] = False,
+) -> None:
+    """Migrer explicitement une state-machine en ajoutant des transitions."""
+
+    project_dir = Path.cwd()
+    before = (
+        snapshot_project_files(project_dir) if not no_record and not dry_run else {}
+    )
+    try:
+        if blueprint.strip().lower() != "state-machine":
+            raise ValueError("Only additive state-machine migrations are supported")
+        if spec is None:
+            raise ValueError("State-machine migration requires --spec")
+        parameters = resolve_blueprint_parameters(
+            "state-machine",
+            spec_path=spec,
+            interactive=False,
+        )
+        if parameters is None:  # pragma: no cover - state-machine is parameterized
+            raise ValueError("State-machine migration requires canonical parameters")
+        plan = plan_state_machine_migration(
+            project_dir,
+            entity_name=entity,
+            feature_name=feature,
+            parameters=parameters,
+        )
+    except (OSError, SyntaxError, ValueError) as exc:
+        console.print(f"[red]✗ Migration refusée :[/red] {exc}")
+        raise typer.Exit(1) from exc
+
+    for path in plan.creations:
+        console.print(f"create [bold]{path.relative_to(project_dir)}[/bold]")
+    for path in plan.replacements:
+        console.print(f"update [bold]{path.relative_to(project_dir)}[/bold]")
+    for path in plan.preserved:
+        console.print(f"preserve [dim]{path.relative_to(project_dir)}[/dim]")
+    if dry_run:
+        console.print("[cyan]Dry run: aucun fichier ni manifest modifié.[/cyan]")
+        return
+
+    try:
+        changed = apply_state_machine_migration(plan)
+    except (OSError, ValueError) as exc:
+        console.print(f"[red]✗ Migration refusée :[/red] {exc}")
+        raise typer.Exit(1) from exc
+    console.print(
+        f"[bold green]✓ State-machine {plan.feature} migrée pour {plan.entity.pascal}.[/bold green]"
+    )
+    if not no_record and changed:
+        previous_digests = plan.previous_manifest.digests
+        if previous_digests is None:  # pragma: no cover - preflight proves it
+            raise RuntimeError("State-machine migration requires a prior parameters digest")
+        target_parameters = plan.target_manifest.parameters
+        if target_parameters is None:  # pragma: no cover - preflight proves it
+            raise RuntimeError("State-machine migration requires target parameters")
+        record_success(
+            project_dir,
+            command="migrate-blueprint",
+            args={
+                "blueprint": "state-machine",
+                "entity": plan.entity.pascal,
+                "feature": plan.feature,
+                "migration": MIGRATION_KIND,
+                "from_parameters_digest": previous_digests.parameters,
+                "operations": list(plan.target_manifest.operations),
+                "blueprint_version": plan.target_manifest.blueprint.version,
+                "template_digest": application_blueprint_digest(
+                    get_application_blueprint("state-machine")
+                ),
+                "parameters": target_parameters,
+                "parameters_digest": application_parameters_digest(
+                    get_application_blueprint("state-machine"), target_parameters
                 ),
             },
             before=before,

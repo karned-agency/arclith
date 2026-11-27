@@ -17,6 +17,7 @@ from .application_blueprint_cli import (
     add_entity_command,
     application_profile_recipe_metadata,
     blueprints_command,
+    migrate_blueprint_command,
     prompt_entity,
     resolve_blueprint_parameters,
     resolve_entity_profile,
@@ -53,6 +54,7 @@ app.command(name="expose-feature")(expose_feature_command)
 app.command(name="add-entity")(add_entity_command)
 app.command(name="blueprints")(blueprints_command)
 app.command(name="add-blueprint")(add_blueprint_command)
+app.command(name="migrate-blueprint")(migrate_blueprint_command)
 app.command(name="guide")(guide_command)
 app.command(name="status")(status_command)
 app.command(name="doctor")(doctor_command)

@@ -30,6 +30,7 @@ La version 1 enregistre :
 - `init` et `new` ;
 - `add-entity` ;
 - `add-blueprint` ;
+- `migrate-blueprint` ;
 - `add-usecase` ;
 - `add-intent-interpreter` ;
 - `add-adapter` ;
@@ -141,7 +142,8 @@ arclith-cli replay arclith.recipe.yaml --dir ../todo-service-rebuilt
 ```
 
 Le replay appelle directement les opérations Python de `init`, `add-entity`,
-`add-blueprint`, `add-usecase`, `add-intent-interpreter`, `add-adapter`,
+`add-blueprint`, `migrate-blueprint`, `add-usecase`, `add-intent-interpreter`,
+`add-adapter`,
 `expose-usecase` et `expose-feature`. Il ne construit pas une ligne de commande
 shell, ce qui évite les différences de quoting et garde les erreurs testables.
 Les anciennes étapes `add-entity` qui n'ont pas de `profile` restent compatibles
@@ -185,6 +187,13 @@ correspondant est V3 (`target.kind: entity|standalone`). Les paramètres canoniq
 remplacent le chemin de la spec et leurs digests sont prévalidés avant toute
 création de projet. Les manifests V1/V2 et les anciennes recettes restent
 lisibles, sans réécriture implicite.
+
+`migrate-blueprint state-machine` est une étape distincte de
+`add-blueprint`. Elle conserve le digest des paramètres source, le mapping
+canonique cible et les digests cible. Au replay, Arclith vérifie ces deux bornes
+avant toute écriture et n'accepte que l'ajout de transitions entre les états déjà
+installés. Les artefacts communs modifiés par le projet restent protégés : une
+divergence refuse le replay au lieu d'écraser du code.
 
 Les étapes rejouées ne sont pas enregistrées une seconde fois. Pour une cible
 nouvelle, la recette sélectionnée est copiée une seule fois après le succès du

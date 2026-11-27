@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Added
+
+- **Migration additive de state-machine** — `migrate-blueprint state-machine`
+  ajoute explicitement des transitions entre états déjà installés, régénère les
+  seuls artefacts canoniques concernés et inscrit les digests source/cible dans
+  la recette rejouable. Les transitions, états et fichiers communs modifiés par
+  le projet sont refusés plutôt qu'écrasés.
+
 ---
 
 ## [0.33.0] — 2026-09-26
