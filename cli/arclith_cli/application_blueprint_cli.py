@@ -20,6 +20,7 @@ from arclith_cli.blueprint_generation import (
     create_entity_with_application_blueprint,
     plan_application_profile_for_new_entity,
 )
+from arclith_cli.application_blueprint_recipe_models import MigrateBlueprintRecipeArgs
 from arclith_cli.command_recording import record_success
 from arclith_cli.core_scaffold import add_entity_cmd
 from arclith_cli.recipe import record_successful_step, snapshot_project_files
@@ -28,8 +29,10 @@ from arclith_cli.project_paths import detect_project_paths
 from arclith_cli.state_machine_entity import render_state_machine_entity
 from arclith_cli.state_machine_migration import (
     MIGRATION_KIND,
-    apply_state_machine_migration,
     plan_state_machine_migration,
+)
+from arclith_cli.state_machine_migration_publisher import (
+    apply_state_machine_migration,
     rollback_state_machine_migration,
 )
 from arclith_cli.state_machine_spec import StateMachineSpec, load_state_machine_spec
@@ -332,25 +335,26 @@ def migrate_blueprint_command(
         if target_parameters is None:  # pragma: no cover - preflight proves it
             raise RuntimeError("State-machine migration requires target parameters")
         try:
+            migration_args = MigrateBlueprintRecipeArgs(
+                blueprint="state-machine",
+                entity=plan.entity.pascal,
+                feature=plan.feature,
+                migration=MIGRATION_KIND,
+                from_parameters_digest=previous_digests.parameters,
+                operations=list(plan.target_manifest.operations),
+                blueprint_version=plan.target_manifest.blueprint.version,
+                template_digest=application_blueprint_digest(
+                    get_application_blueprint("state-machine")
+                ),
+                parameters=target_parameters,
+                parameters_digest=application_parameters_digest(
+                    get_application_blueprint("state-machine"), target_parameters
+                ),
+            )
             record_successful_step(
                 project_dir,
                 command="migrate-blueprint",
-                args={
-                    "blueprint": "state-machine",
-                    "entity": plan.entity.pascal,
-                    "feature": plan.feature,
-                    "migration": MIGRATION_KIND,
-                    "from_parameters_digest": previous_digests.parameters,
-                    "operations": list(plan.target_manifest.operations),
-                    "blueprint_version": plan.target_manifest.blueprint.version,
-                    "template_digest": application_blueprint_digest(
-                        get_application_blueprint("state-machine")
-                    ),
-                    "parameters": target_parameters,
-                    "parameters_digest": application_parameters_digest(
-                        get_application_blueprint("state-machine"), target_parameters
-                    ),
-                },
+                args=migration_args.model_dump(mode="python"),
                 before=before,
             )
         except (OSError, RecipeError) as exc:

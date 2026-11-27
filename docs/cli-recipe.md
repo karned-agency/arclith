@@ -195,6 +195,10 @@ avant toute écriture et n'accepte que l'ajout de transitions entre les états d
 installés. Les artefacts communs modifiés par le projet restent protégés : une
 divergence refuse le replay au lieu d'écraser du code.
 
+Ses arguments persistés sont validés par un contrat typé strict : les champs
+inconnus, les types ambigus et les digests incomplets sont refusés avant la
+planification et avant toute écriture.
+
 Les étapes rejouées ne sont pas enregistrées une seconde fois. Pour une cible
 nouvelle, la recette sélectionnée est copiée une seule fois après le succès du
 replay. Pour un projet existant qui possède déjà sa recette, celle-ci n'est pas

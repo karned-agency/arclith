@@ -19,7 +19,9 @@ from typer.testing import CliRunner
 from arclith_cli import atomic_writes, blueprint_generation, core_scaffold
 from arclith_cli.atomic_writes import FilePublication
 from arclith_cli.application_blueprint_recipe import (
+    parse_migrate_blueprint_recipe_args,
     replay_add_entity_step,
+    validate_application_blueprint_recipe_step,
     validate_application_recipe_metadata,
 )
 from arclith_cli.application_blueprint_cli import application_profile_recipe_metadata
@@ -46,9 +48,10 @@ from arclith_cli.recipe import load_recipe, replay_recipe
 from arclith_cli.recipe_models import RecipeError, save_recipe
 from arclith_cli.state_machine_contract import statement_binds_name
 from arclith_cli.state_machine_migration import (
-    apply_state_machine_migration,
+    MIGRATION_KIND,
     plan_state_machine_migration,
 )
+from arclith_cli.state_machine_migration_publisher import apply_state_machine_migration
 from arclith_cli.state_machine_spec import StateMachineSpec, load_state_machine_spec
 
 
@@ -84,6 +87,41 @@ def _parameterized_recipe_args() -> dict[str, object]:
         "template_digest": application_blueprint_digest(blueprint),
         "parameters_digest": application_parameters_digest(blueprint, parameters),
     }
+
+
+def test_migration_recipe_contract_rejects_unknown_and_invalid_digest() -> None:
+    blueprint = get_application_blueprint("state-machine")
+    parameters = StateMachineSpec.from_dict(_spec_document()).to_parameters()
+    args: dict[str, object] = {
+        "blueprint": "state-machine",
+        "entity": "Invoice",
+        "feature": "invoice_lifecycle",
+        "migration": MIGRATION_KIND,
+        "from_parameters_digest": application_parameters_digest(blueprint, parameters),
+        "operations": list(StateMachineSpec.from_parameters(parameters).operations),
+        "blueprint_version": blueprint.version,
+        "template_digest": application_blueprint_digest(blueprint),
+        "parameters": parameters,
+        "parameters_digest": application_parameters_digest(blueprint, parameters),
+    }
+
+    parsed = parse_migrate_blueprint_recipe_args(args)
+
+    assert parsed.model_dump(mode="python") == args
+    validate_application_blueprint_recipe_step("migrate-blueprint", args)
+    with pytest.raises(RecipeError, match="extra_forbidden"):
+        validate_application_blueprint_recipe_step(
+            "migrate-blueprint", {**args, "unrecognized": True}
+        )
+    with pytest.raises(RecipeError, match="must be a sha256 digest"):
+        validate_application_blueprint_recipe_step(
+            "migrate-blueprint",
+            {**args, "from_parameters_digest": "sha256:incomplete"}
+        )
+    with pytest.raises(RecipeError, match="supported state-machine migration kind"):
+        validate_application_blueprint_recipe_step(
+            "migrate-blueprint", {**args, "migration": "unsupported"}
+        )
 
 
 def _project(tmp_path: Path, name: str = "invoice-service") -> Path:

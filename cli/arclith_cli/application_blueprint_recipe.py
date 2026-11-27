@@ -1,5 +1,8 @@
+from collections.abc import Callable, Mapping
 from pathlib import Path
 from typing import Any
+
+from pydantic import ValidationError
 
 from arclith_cli.application_blueprints import (
     application_blueprint_digest,
@@ -15,13 +18,17 @@ from arclith_cli.blueprint_generation import (
 from arclith_cli.core_scaffold import add_entity_cmd
 from arclith_cli.project_paths import detect_project_paths
 from arclith_cli.recipe_models import RecipeError
+from arclith_cli.application_blueprint_recipe_models import MigrateBlueprintRecipeArgs
 from arclith_cli.state_machine_entity import render_state_machine_entity
-from arclith_cli.state_machine_migration import (
-    MIGRATION_KIND,
-    apply_state_machine_migration,
-    plan_state_machine_migration,
-)
+from arclith_cli.state_machine_migration import plan_state_machine_migration
+from arclith_cli.state_machine_migration_publisher import apply_state_machine_migration
 from arclith_cli.state_machine_spec import StateMachineSpec
+
+ApplicationBlueprintRecipeHandler = Callable[[Path, dict[str, Any]], None]
+
+APPLICATION_BLUEPRINT_RECIPE_COMMANDS = frozenset(
+    {"add-entity", "add-blueprint", "migrate-blueprint"}
+)
 
 
 def replay_application_blueprint_step(
@@ -30,14 +37,39 @@ def replay_application_blueprint_step(
     args: dict[str, Any],
 ) -> None:
     """Replay entity and application-blueprint recipe operations."""
+    try:
+        handler = _APPLICATION_BLUEPRINT_RECIPE_HANDLERS[command]
+    except KeyError as exc:
+        raise ValueError(
+            f"Unsupported application blueprint recipe command: {command}"
+        ) from exc
+    handler(target_dir, args)
+
+
+def is_application_blueprint_recipe_command(command: str) -> bool:
+    """Return whether a command is replayed by the application-blueprint module."""
+
+    return command in APPLICATION_BLUEPRINT_RECIPE_COMMANDS
+
+
+def validate_application_blueprint_recipe_step(
+    command: str,
+    args: dict[str, Any],
+) -> None:
+    """Preflight one application-blueprint recipe step before any write."""
+
     if command == "add-entity":
-        replay_add_entity_step(target_dir, args)
+        validate_application_recipe_metadata(str(args.get("profile", "minimal")), args)
         return
     if command == "add-blueprint":
-        replay_add_blueprint_step(target_dir, args)
+        validate_application_recipe_metadata(required_recipe_blueprint_name(args), args)
         return
     if command == "migrate-blueprint":
-        replay_migrate_blueprint_step(target_dir, args)
+        migration = parse_migrate_blueprint_recipe_args(args)
+        validate_application_recipe_metadata(
+            migration.blueprint,
+            migration.model_dump(mode="python"),
+        )
         return
     raise ValueError(f"Unsupported application blueprint recipe command: {command}")
 
@@ -92,34 +124,37 @@ def replay_add_blueprint_step(target_dir: Path, args: dict[str, Any]) -> None:
 def replay_migrate_blueprint_step(target_dir: Path, args: dict[str, Any]) -> None:
     """Replay one explicit additive state-machine migration."""
 
-    blueprint_name = required_recipe_blueprint_name(args)
-    if blueprint_name != "state-machine":
-        raise RecipeError("Only state-machine blueprint migrations are supported")
-    if args.get("migration") != MIGRATION_KIND:
-        raise RecipeError("Recipe state-machine migration has an unsupported migration kind")
-    validate_application_recipe_metadata(blueprint_name, args)
-    source_digest = args.get("from_parameters_digest")
-    if not isinstance(source_digest, str) or not source_digest.startswith("sha256:"):
-        raise RecipeError("Recipe state-machine migration requires from_parameters_digest")
-    raw_parameters = args.get("parameters")
-    if not isinstance(raw_parameters, dict):
-        raise RecipeError("Recipe state-machine migration requires parameters")
-    entity = args.get("entity")
-    if not isinstance(entity, str) or not entity.strip():
-        raise RecipeError("Recipe state-machine migration requires an entity")
-    feature = args.get("feature")
-    if not isinstance(feature, str) or not feature.strip():
-        raise RecipeError("Recipe state-machine migration requires a feature")
+    migration = parse_migrate_blueprint_recipe_args(args)
+    validate_application_recipe_metadata(
+        migration.blueprint,
+        migration.model_dump(mode="python"),
+    )
     plan = plan_state_machine_migration(
         target_dir,
-        entity_name=entity,
-        feature_name=feature,
-        parameters=raw_parameters,
+        entity_name=migration.entity,
+        feature_name=migration.feature,
+        parameters=migration.parameters,
     )
     previous_digests = plan.previous_manifest.digests
-    if previous_digests is None or previous_digests.parameters != source_digest:
+    if (
+        previous_digests is None
+        or previous_digests.parameters != migration.from_parameters_digest
+    ):
         raise RecipeError("Recipe state-machine migration source digest does not match")
     apply_state_machine_migration(plan)
+
+
+def parse_migrate_blueprint_recipe_args(
+    args: Mapping[str, Any],
+) -> MigrateBlueprintRecipeArgs:
+    """Parse persisted migration arguments into the strict replay contract."""
+
+    try:
+        return MigrateBlueprintRecipeArgs.model_validate(args)
+    except ValidationError as exc:
+        raise RecipeError(
+            "Invalid state-machine migration recipe arguments: " + str(exc)
+        ) from exc
 
 
 def required_recipe_blueprint_name(args: dict[str, Any]) -> str:
@@ -232,3 +267,10 @@ def _validate_job_target(args: dict[str, Any], blueprint_name: str = "job") -> N
             raise RecipeError(f"Standalone {blueprint_name} requires --feature and excludes --entity")
     elif "no_entity" in args or not isinstance(entity, str) or not entity.strip():
         raise RecipeError(f"{blueprint_name} recipe requires exactly one entity or no_entity=true target")
+
+
+_APPLICATION_BLUEPRINT_RECIPE_HANDLERS: dict[str, ApplicationBlueprintRecipeHandler] = {
+    "add-entity": replay_add_entity_step,
+    "add-blueprint": replay_add_blueprint_step,
+    "migrate-blueprint": replay_migrate_blueprint_step,
+}
