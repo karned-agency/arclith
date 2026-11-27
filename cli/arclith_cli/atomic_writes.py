@@ -109,11 +109,13 @@ def replace_text_file_if_unchanged(
             try:
                 os.close(descriptor)
             except OSError:
+                # Cleanup must not hide the original write or replacement failure.
                 pass
         if temporary_path is not None:
             try:
                 temporary_path.unlink(missing_ok=True)
             except OSError:
+                # A leaked hidden temporary is safer than masking the primary error.
                 pass
 
 

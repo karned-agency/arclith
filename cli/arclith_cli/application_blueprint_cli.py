@@ -22,13 +22,15 @@ from arclith_cli.blueprint_generation import (
 )
 from arclith_cli.command_recording import record_success
 from arclith_cli.core_scaffold import add_entity_cmd
-from arclith_cli.recipe import snapshot_project_files
+from arclith_cli.recipe import record_successful_step, snapshot_project_files
+from arclith_cli.recipe_models import RecipeError
 from arclith_cli.project_paths import detect_project_paths
 from arclith_cli.state_machine_entity import render_state_machine_entity
 from arclith_cli.state_machine_migration import (
     MIGRATION_KIND,
     apply_state_machine_migration,
     plan_state_machine_migration,
+    rollback_state_machine_migration,
 )
 from arclith_cli.state_machine_spec import StateMachineSpec, load_state_machine_spec
 
@@ -317,41 +319,58 @@ def migrate_blueprint_command(
         return
 
     try:
-        changed = apply_state_machine_migration(plan)
+        publication = apply_state_machine_migration(plan)
     except (OSError, ValueError) as exc:
         console.print(f"[red]✗ Migration refusée :[/red] {exc}")
         raise typer.Exit(1) from exc
-    console.print(
-        f"[bold green]✓ State-machine {plan.feature} migrée pour {plan.entity.pascal}.[/bold green]"
-    )
-    if not no_record and changed:
+
+    if not no_record and publication.changed:
         previous_digests = plan.previous_manifest.digests
         if previous_digests is None:  # pragma: no cover - preflight proves it
             raise RuntimeError("State-machine migration requires a prior parameters digest")
         target_parameters = plan.target_manifest.parameters
         if target_parameters is None:  # pragma: no cover - preflight proves it
             raise RuntimeError("State-machine migration requires target parameters")
-        record_success(
-            project_dir,
-            command="migrate-blueprint",
-            args={
-                "blueprint": "state-machine",
-                "entity": plan.entity.pascal,
-                "feature": plan.feature,
-                "migration": MIGRATION_KIND,
-                "from_parameters_digest": previous_digests.parameters,
-                "operations": list(plan.target_manifest.operations),
-                "blueprint_version": plan.target_manifest.blueprint.version,
-                "template_digest": application_blueprint_digest(
-                    get_application_blueprint("state-machine")
-                ),
-                "parameters": target_parameters,
-                "parameters_digest": application_parameters_digest(
-                    get_application_blueprint("state-machine"), target_parameters
-                ),
-            },
-            before=before,
-        )
+        try:
+            record_successful_step(
+                project_dir,
+                command="migrate-blueprint",
+                args={
+                    "blueprint": "state-machine",
+                    "entity": plan.entity.pascal,
+                    "feature": plan.feature,
+                    "migration": MIGRATION_KIND,
+                    "from_parameters_digest": previous_digests.parameters,
+                    "operations": list(plan.target_manifest.operations),
+                    "blueprint_version": plan.target_manifest.blueprint.version,
+                    "template_digest": application_blueprint_digest(
+                        get_application_blueprint("state-machine")
+                    ),
+                    "parameters": target_parameters,
+                    "parameters_digest": application_parameters_digest(
+                        get_application_blueprint("state-machine"), target_parameters
+                    ),
+                },
+                before=before,
+            )
+        except (OSError, RecipeError) as exc:
+            try:
+                rollback_state_machine_migration(publication)
+            except OSError as rollback_error:
+                console.print(
+                    "[red]✗ Migration interrompue :[/red] la recette n'a pas pu être "
+                    "enregistrée et la compensation sûre a échoué : "
+                    f"{rollback_error}"
+                )
+                raise typer.Exit(1) from rollback_error
+            console.print(
+                "[red]✗ Migration annulée :[/red] impossible d'enregistrer la recette : "
+                f"{exc}"
+            )
+            raise typer.Exit(1) from exc
+    console.print(
+        f"[bold green]✓ State-machine {plan.feature} migrée pour {plan.entity.pascal}.[/bold green]"
+    )
 
 
 def prompt_entity() -> str:

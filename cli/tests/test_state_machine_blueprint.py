@@ -2775,6 +2775,78 @@ def test_additive_migration_compensates_if_a_file_changes_after_planning(
     } == before
 
 
+def test_additive_migration_rolls_back_when_recipe_recording_fails(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    project = _project(tmp_path)
+    _stateful_entity(project)
+    original_spec = _write_spec(project)
+    installed = _invoke(
+        monkeypatch,
+        project,
+        [
+            "add-blueprint",
+            "state-machine",
+            "--entity",
+            "Invoice",
+            "--feature",
+            "invoice_lifecycle",
+            "--spec",
+            str(original_spec),
+        ],
+    )
+    assert installed.exit_code == 0, installed.output
+    changed = {
+        **_parameters(),
+        "transitions": [
+            *_parameters()["transitions"],  # type: ignore[misc]
+            {"name": "reopen", "from": ["rejected"], "to": "draft"},
+        ],
+    }
+    changed_spec = _write_spec(project, changed, filename="changed.yaml")
+    before = {
+        path.relative_to(project): path.read_bytes()
+        for path in project.rglob("*")
+        if path.is_file()
+    }
+
+    def fail_recipe_recording(*args: object, **kwargs: object) -> None:
+        raise OSError("injected recipe write failure")
+
+    monkeypatch.setattr(
+        "arclith_cli.recipe.save_recipe",
+        fail_recipe_recording,
+    )
+    result = _invoke(
+        monkeypatch,
+        project,
+        [
+            "migrate-blueprint",
+            "state-machine",
+            "--entity",
+            "Invoice",
+            "--feature",
+            "invoice_lifecycle",
+            "--spec",
+            str(changed_spec),
+        ],
+    )
+
+    assert result.exit_code == 1
+    assert "Migration annulée" in result.output
+    assert not (
+        project / "src/invoice_service/application/use_cases/reopen_invoice.py"
+    ).exists()
+    assert {
+        path.relative_to(project): path.read_bytes()
+        for path in project.rglob("*")
+        if path.is_file()
+    } == before
+    recipe = load_recipe(project / "arclith.recipe.yaml")
+    assert all(step.command != "migrate-blueprint" for step in recipe.steps)
+
+
 def test_additive_migration_recipe_replays_from_an_initial_state_machine(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
