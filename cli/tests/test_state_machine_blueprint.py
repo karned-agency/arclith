@@ -19,7 +19,9 @@ from typer.testing import CliRunner
 from arclith_cli import atomic_writes, blueprint_generation, core_scaffold
 from arclith_cli.atomic_writes import FilePublication
 from arclith_cli.application_blueprint_recipe import (
+    parse_migrate_blueprint_recipe_args,
     replay_add_entity_step,
+    validate_application_blueprint_recipe_step,
     validate_application_recipe_metadata,
 )
 from arclith_cli.application_blueprint_cli import application_profile_recipe_metadata
@@ -45,6 +47,11 @@ from arclith_cli.main import app
 from arclith_cli.recipe import load_recipe, replay_recipe
 from arclith_cli.recipe_models import RecipeError, save_recipe
 from arclith_cli.state_machine_contract import statement_binds_name
+from arclith_cli.state_machine_migration import (
+    MIGRATION_KIND,
+    plan_state_machine_migration,
+)
+from arclith_cli.state_machine_migration_publisher import apply_state_machine_migration
 from arclith_cli.state_machine_spec import StateMachineSpec, load_state_machine_spec
 
 
@@ -80,6 +87,44 @@ def _parameterized_recipe_args() -> dict[str, object]:
         "template_digest": application_blueprint_digest(blueprint),
         "parameters_digest": application_parameters_digest(blueprint, parameters),
     }
+
+
+def test_migration_recipe_contract_rejects_unknown_and_invalid_digest() -> None:
+    blueprint = get_application_blueprint("state-machine")
+    parameters = StateMachineSpec.from_dict(_spec_document()).to_parameters()
+    args: dict[str, object] = {
+        "blueprint": "state-machine",
+        "entity": "Invoice",
+        "feature": "invoice_lifecycle",
+        "migration": MIGRATION_KIND,
+        "from_parameters_digest": application_parameters_digest(blueprint, parameters),
+        "operations": list(StateMachineSpec.from_parameters(parameters).operations),
+        "blueprint_version": blueprint.version,
+        "template_digest": application_blueprint_digest(blueprint),
+        "parameters": parameters,
+        "parameters_digest": application_parameters_digest(blueprint, parameters),
+    }
+
+    parsed = parse_migrate_blueprint_recipe_args(args)
+
+    assert parsed.model_dump(mode="python") == args
+    assert parse_migrate_blueprint_recipe_args(
+        {**args, "feature": "invoice-lifecycle"}
+    ).feature == "invoice_lifecycle"
+    validate_application_blueprint_recipe_step("migrate-blueprint", args)
+    with pytest.raises(RecipeError, match="extra_forbidden"):
+        validate_application_blueprint_recipe_step(
+            "migrate-blueprint", {**args, "unrecognized": True}
+        )
+    with pytest.raises(RecipeError, match="must be a sha256 digest"):
+        validate_application_blueprint_recipe_step(
+            "migrate-blueprint",
+            {**args, "from_parameters_digest": "sha256:incomplete"}
+        )
+    with pytest.raises(RecipeError, match="supported state-machine migration kind"):
+        validate_application_blueprint_recipe_step(
+            "migrate-blueprint", {**args, "migration": "unsupported"}
+        )
 
 
 def _project(tmp_path: Path, name: str = "invoice-service") -> Path:
@@ -2473,6 +2518,452 @@ def test_spec_drift_is_rejected_and_developer_files_are_preserved(
     assert not (
         project / "src/invoice_service/application/use_cases/reopen_invoice.py"
     ).exists()
+
+
+def test_additive_migration_updates_canonical_shared_files_and_preserves_operations(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    project = _project(tmp_path)
+    _stateful_entity(project)
+    original_spec = _write_spec(project)
+    installed = _invoke(
+        monkeypatch,
+        project,
+        [
+            "add-blueprint",
+            "state-machine",
+            "--entity",
+            "Invoice",
+            "--feature",
+            "invoice_lifecycle",
+            "--spec",
+            str(original_spec),
+        ],
+    )
+    assert installed.exit_code == 0, installed.output
+    original_manifest = load_feature_manifest(
+        project / ".arclith/features/invoice_lifecycle.yaml"
+    )
+    submit_use_case = (
+        project / "src/invoice_service/application/use_cases/submit_invoice.py"
+    )
+    submit_use_case.write_text(
+        submit_use_case.read_text(encoding="utf-8") + "\n# project-owned rule\n",
+        encoding="utf-8",
+    )
+    changed = {
+        **_parameters(),
+        "transitions": [
+            *_parameters()["transitions"],  # type: ignore[misc]
+            {"name": "reopen", "from": ["rejected"], "to": "draft"},
+        ],
+    }
+    changed_spec = _write_spec(project, changed, filename="changed.yaml")
+    before_dry_run = {
+        path.relative_to(project): path.read_bytes()
+        for path in project.rglob("*")
+        if path.is_file()
+    }
+
+    dry_run = _invoke(
+        monkeypatch,
+        project,
+        [
+            "migrate-blueprint",
+            "state-machine",
+            "--entity",
+            "Invoice",
+            "--feature",
+            "invoice_lifecycle",
+            "--spec",
+            str(changed_spec),
+            "--dry-run",
+        ],
+    )
+
+    assert dry_run.exit_code == 0, dry_run.output
+    assert "create" in dry_run.output
+    assert "update" in dry_run.output
+    assert {
+        path.relative_to(project): path.read_bytes()
+        for path in project.rglob("*")
+        if path.is_file()
+    } == before_dry_run
+
+    migrated = _invoke(
+        monkeypatch,
+        project,
+        [
+            "migrate-blueprint",
+            "state-machine",
+            "--entity",
+            "Invoice",
+            "--feature",
+            "invoice_lifecycle",
+            "--spec",
+            str(changed_spec),
+        ],
+    )
+
+    assert migrated.exit_code == 0, migrated.output
+    package = project / "src/invoice_service"
+    assert (package / "application/use_cases/reopen_invoice.py").is_file()
+    assert (package / "domain/ports/inbound/reopen_invoice.py").is_file()
+    assert "def reopen(" in (
+        package / "domain/services/invoice_lifecycle.py"
+    ).read_text(encoding="utf-8")
+    assert submit_use_case.read_text(encoding="utf-8").endswith("# project-owned rule\n")
+    manifest = load_feature_manifest(project / ".arclith/features/invoice_lifecycle.yaml")
+    assert manifest.operations == ("approve", "reject", "reopen", "submit")
+    assert manifest.digests is not None
+    assert original_manifest.digests is not None
+    recipe = load_recipe(project / "arclith.recipe.yaml")
+    migration = recipe.steps[-1]
+    assert migration.command == "migrate-blueprint"
+    assert migration.args["from_parameters_digest"] == original_manifest.digests.parameters
+    assert migration.args["parameters_digest"] == manifest.digests.parameters
+
+
+def test_additive_migration_refuses_to_replace_a_customized_shared_file(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    project = _project(tmp_path)
+    _stateful_entity(project)
+    original_spec = _write_spec(project)
+    installed = _invoke(
+        monkeypatch,
+        project,
+        [
+            "add-blueprint",
+            "state-machine",
+            "--entity",
+            "Invoice",
+            "--feature",
+            "invoice_lifecycle",
+            "--spec",
+            str(original_spec),
+        ],
+    )
+    assert installed.exit_code == 0, installed.output
+    service = project / "src/invoice_service/domain/services/invoice_lifecycle.py"
+    service.write_text(
+        service.read_text(encoding="utf-8") + "\n# project-owned guard\n",
+        encoding="utf-8",
+    )
+    changed = {
+        **_parameters(),
+        "transitions": [
+            *_parameters()["transitions"],  # type: ignore[misc]
+            {"name": "reopen", "from": ["rejected"], "to": "draft"},
+        ],
+    }
+    changed_spec = _write_spec(project, changed, filename="changed.yaml")
+    before = {
+        path.relative_to(project): path.read_bytes()
+        for path in project.rglob("*")
+        if path.is_file()
+    }
+
+    result = _invoke(
+        monkeypatch,
+        project,
+        [
+            "migrate-blueprint",
+            "state-machine",
+            "--entity",
+            "Invoice",
+            "--feature",
+            "invoice_lifecycle",
+            "--spec",
+            str(changed_spec),
+        ],
+    )
+
+    assert result.exit_code == 1
+    assert "developer-owned" in result.output
+    assert {
+        path.relative_to(project): path.read_bytes()
+        for path in project.rglob("*")
+        if path.is_file()
+    } == before
+
+
+def test_additive_migration_rejects_changed_existing_transition(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    project = _project(tmp_path)
+    _stateful_entity(project)
+    original_spec = _write_spec(project)
+    installed = _invoke(
+        monkeypatch,
+        project,
+        [
+            "add-blueprint",
+            "state-machine",
+            "--entity",
+            "Invoice",
+            "--feature",
+            "invoice_lifecycle",
+            "--spec",
+            str(original_spec),
+        ],
+    )
+    assert installed.exit_code == 0, installed.output
+    changed = {
+        **_parameters(),
+        "transitions": [
+            {"name": "submit", "from": ["draft"], "to": "submitted"},
+            {"name": "approve", "from": ["submitted"], "to": "approved"},
+            {"name": "reject", "from": ["draft", "submitted"], "to": "rejected"},
+            {"name": "reopen", "from": ["rejected"], "to": "draft"},
+        ],
+    }
+    changed_spec = _write_spec(project, changed, filename="changed.yaml")
+    before = {
+        path.relative_to(project): path.read_bytes()
+        for path in project.rglob("*")
+        if path.is_file()
+    }
+
+    result = _invoke(
+        monkeypatch,
+        project,
+        [
+            "migrate-blueprint",
+            "state-machine",
+            "--entity",
+            "Invoice",
+            "--feature",
+            "invoice_lifecycle",
+            "--spec",
+            str(changed_spec),
+        ],
+    )
+
+    assert result.exit_code == 1
+    assert (
+        "cannot remove or alter an existing transition: reject"
+        in " ".join(result.output.split())
+    )
+    assert {
+        path.relative_to(project): path.read_bytes()
+        for path in project.rglob("*")
+        if path.is_file()
+    } == before
+
+
+def test_additive_migration_compensates_if_a_file_changes_after_planning(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    project = _project(tmp_path)
+    _stateful_entity(project)
+    original_spec = _write_spec(project)
+    installed = _invoke(
+        monkeypatch,
+        project,
+        [
+            "add-blueprint",
+            "state-machine",
+            "--entity",
+            "Invoice",
+            "--feature",
+            "invoice_lifecycle",
+            "--spec",
+            str(original_spec),
+        ],
+    )
+    assert installed.exit_code == 0, installed.output
+    changed = {
+        **_parameters(),
+        "transitions": [
+            *_parameters()["transitions"],  # type: ignore[misc]
+            {"name": "reopen", "from": ["rejected"], "to": "draft"},
+        ],
+    }
+    plan = plan_state_machine_migration(
+        project,
+        entity_name="Invoice",
+        feature_name="invoice_lifecycle",
+        parameters=StateMachineSpec.from_dict(
+            _spec_document(changed)
+        ).to_parameters(),
+    )
+    service = project / "src/invoice_service/domain/services/invoice_lifecycle.py"
+    service.write_text(
+        service.read_text(encoding="utf-8") + "\n# changed after planning\n",
+        encoding="utf-8",
+    )
+    before = {
+        path.relative_to(project): path.read_bytes()
+        for path in project.rglob("*")
+        if path.is_file()
+    }
+
+    with pytest.raises(ValueError, match="changed after migration planning"):
+        apply_state_machine_migration(plan)
+
+    assert not (
+        project / "src/invoice_service/application/use_cases/reopen_invoice.py"
+    ).exists()
+    assert {
+        path.relative_to(project): path.read_bytes()
+        for path in project.rglob("*")
+        if path.is_file()
+    } == before
+
+
+def test_additive_migration_rolls_back_when_recipe_recording_fails(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    project = _project(tmp_path)
+    _stateful_entity(project)
+    original_spec = _write_spec(project)
+    installed = _invoke(
+        monkeypatch,
+        project,
+        [
+            "add-blueprint",
+            "state-machine",
+            "--entity",
+            "Invoice",
+            "--feature",
+            "invoice_lifecycle",
+            "--spec",
+            str(original_spec),
+        ],
+    )
+    assert installed.exit_code == 0, installed.output
+    changed = {
+        **_parameters(),
+        "transitions": [
+            *_parameters()["transitions"],  # type: ignore[misc]
+            {"name": "reopen", "from": ["rejected"], "to": "draft"},
+        ],
+    }
+    changed_spec = _write_spec(project, changed, filename="changed.yaml")
+    before = {
+        path.relative_to(project): path.read_bytes()
+        for path in project.rglob("*")
+        if path.is_file()
+    }
+
+    def fail_recipe_recording(*args: object, **kwargs: object) -> None:
+        raise OSError("injected recipe write failure")
+
+    monkeypatch.setattr(
+        "arclith_cli.recipe.save_recipe",
+        fail_recipe_recording,
+    )
+    result = _invoke(
+        monkeypatch,
+        project,
+        [
+            "migrate-blueprint",
+            "state-machine",
+            "--entity",
+            "Invoice",
+            "--feature",
+            "invoice_lifecycle",
+            "--spec",
+            str(changed_spec),
+        ],
+    )
+
+    assert result.exit_code == 1
+    assert "Migration annulée" in result.output
+    assert not (
+        project / "src/invoice_service/application/use_cases/reopen_invoice.py"
+    ).exists()
+    assert {
+        path.relative_to(project): path.read_bytes()
+        for path in project.rglob("*")
+        if path.is_file()
+    } == before
+    recipe = load_recipe(project / "arclith.recipe.yaml")
+    assert all(step.command != "migrate-blueprint" for step in recipe.steps)
+
+
+def test_additive_migration_recipe_replays_from_an_initial_state_machine(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    initialized = runner.invoke(
+        app,
+        ["init", "invoice-service", "--dir", str(tmp_path)],
+    )
+    assert initialized.exit_code == 0, initialized.output
+    project = tmp_path / "invoice-service"
+    original_spec = _write_spec(project)
+    created = _invoke(
+        monkeypatch,
+        project,
+        [
+            "add-entity",
+            "Invoice",
+            "--profile",
+            "state-machine",
+            "--spec",
+            str(original_spec),
+        ],
+    )
+    assert created.exit_code == 0, created.output
+    changed = {
+        **_parameters(),
+        "transitions": [
+            *_parameters()["transitions"],  # type: ignore[misc]
+            {"name": "reopen", "from": ["rejected"], "to": "draft"},
+        ],
+    }
+    changed_spec = _write_spec(project, changed, filename="changed.yaml")
+    migrated = _invoke(
+        monkeypatch,
+        project,
+        [
+            "migrate-blueprint",
+            "state-machine",
+            "--entity",
+            "Invoice",
+            "--feature",
+            "invoice",
+            "--spec",
+            str(changed_spec),
+        ],
+    )
+    assert migrated.exit_code == 0, migrated.output
+    recipe = load_recipe(project / "arclith.recipe.yaml")
+    replay_target = tmp_path / "replayed-service"
+
+    executed = replay_recipe(recipe, recipe.steps, target_dir=replay_target, strict=True)
+
+    assert executed == tuple(step.id for step in recipe.steps)
+    replayed = load_feature_manifest(replay_target / ".arclith/features/invoice.yaml")
+    assert replayed.operations == ("approve", "reject", "reopen", "submit")
+    assert (
+        replay_target
+        / "src/invoice_service/application/use_cases/reopen_invoice.py"
+    ).is_file()
+
+    invalid_migration = replace(
+        recipe.steps[-1],
+        args={**recipe.steps[-1].args, "feature": "_invalid"},
+    )
+    invalid_recipe = replace(recipe, steps=(*recipe.steps[:-1], invalid_migration))
+    invalid_target = tmp_path / "invalid-feature-replay"
+
+    with pytest.raises(RecipeError, match="Invalid public feature name"):
+        replay_recipe(
+            invalid_recipe,
+            invalid_recipe.steps,
+            target_dir=invalid_target,
+            strict=True,
+        )
+
+    assert not invalid_target.exists()
 
 
 def test_profile_collision_is_atomic_and_recipe_replay_needs_no_spec_file(

@@ -11,6 +11,11 @@ from typing import Any, Mapping
 from urllib.parse import urlsplit
 
 from arclith_cli import __version__
+from arclith_cli.application_blueprint_recipe import (
+    APPLICATION_BLUEPRINT_RECIPE_COMMANDS,
+    is_application_blueprint_recipe_command,
+    validate_application_blueprint_recipe_step,
+)
 from arclith_cli.capability_models import AdapterSpec
 from arclith_cli.project_paths import detect_project_paths
 from arclith_cli.recipe_execution import execute_adapter_step, execute_binding_step
@@ -34,8 +39,7 @@ _SUPPORTED_COMMANDS = {
     "init",
     "new",
     "add-adapter",
-    "add-blueprint",
-    "add-entity",
+    *APPLICATION_BLUEPRINT_RECIPE_COMMANDS,
     "add-usecase",
     "add-intent-interpreter",
     "expose-usecase",
@@ -235,18 +239,16 @@ def _validate_application_blueprint_replay_metadata(
 ) -> None:
     """Reject blueprint drift across the full selection before the first write."""
     from arclith_cli.application_blueprint_recipe import (
-        required_recipe_blueprint_name,
         validate_application_recipe_metadata,
     )
 
     for step, args in prepared:
-        blueprint_name: str | None = None
-        if step.command in {"new", "add-entity"}:
-            blueprint_name = str(args.get("profile", "minimal"))
-        elif step.command == "add-blueprint":
-            blueprint_name = required_recipe_blueprint_name(args)
-        if blueprint_name is not None:
-            validate_application_recipe_metadata(blueprint_name, args)
+        if is_application_blueprint_recipe_command(step.command):
+            validate_application_blueprint_recipe_step(step.command, args)
+        elif step.command == "new":
+            validate_application_recipe_metadata(
+                str(args.get("profile", "minimal")), args
+            )
 
 
 def plan_replay_steps(
@@ -333,7 +335,7 @@ def _execute_step(
         raise RecipeError(
             f"Replay target does not exist before step {step.id}: {target_dir}"
         )
-    if step.command in {"add-entity", "add-blueprint"}:
+    if is_application_blueprint_recipe_command(step.command):
         from arclith_cli.application_blueprint_recipe import (
             replay_application_blueprint_step,
         )

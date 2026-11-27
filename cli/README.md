@@ -243,13 +243,20 @@ arclith-cli add-entity Invoice --profile state-machine \
 # Ou pour une entité existante dont le champ status est déjà typé et frozen :
 arclith-cli add-blueprint state-machine --entity Invoice \
   --feature invoice_lifecycle --spec invoice-lifecycle.yaml
+# Pour ajouter une transition entre les états déjà installés :
+arclith-cli migrate-blueprint state-machine --entity Invoice \
+  --feature invoice_lifecycle --spec invoice-lifecycle-v2.yaml --dry-run
 ```
 
 Le modèle généré refuse l'affectation et les mises à jour `model_copy` génériques
 du champ d'état. Le manifeste V2 et la recette embarquent les paramètres résolus,
 pas le chemin local de la spec. Aucun adapter ou transport n'est ajouté. Consulter le
 [contrat state-machine](https://arclith.karned.bzh/blueprints/state-machine/)
-pour les gardes, le CAS et l'évolution des états persistés.
+pour les gardes, le CAS et l'évolution des états persistés. Une feature déjà
+installée est immuable avec `add-blueprint`; `migrate-blueprint state-machine`
+est l'opération explicite et additive pour ajouter des transitions entre états
+existants. Elle refuse les états ou transitions existantes modifiés et tout
+artefact commun personnalisé.
 
 ---
 
@@ -265,6 +272,8 @@ arclith-cli add-blueprint crud --entity ShoppingItem --dry-run
 arclith-cli add-blueprint crud --entity ShoppingItem
 arclith-cli add-blueprint state-machine --entity Invoice \
   --feature invoice_lifecycle --spec invoice-lifecycle.yaml
+arclith-cli migrate-blueprint state-machine --entity Invoice \
+  --feature invoice_lifecycle --spec invoice-lifecycle-v2.yaml --dry-run
 ```
 
 La première application écrit `.arclith/features/shopping_item.yaml`. Un replay
@@ -636,7 +645,7 @@ arclith = Arclith("config.yaml")
 
 ### `history` et `replay` — Relire et rejouer les décisions CLI
 
-`init`, `new`, `add-entity`, `add-blueprint`, `add-usecase`,
+`init`, `new`, `add-entity`, `add-blueprint`, `migrate-blueprint`, `add-usecase`,
 `add-intent-interpreter`, `add-adapter`, `expose-usecase` et `expose-feature`
 ajoutent une étape à
 `arclith.recipe.yaml` uniquement après leur

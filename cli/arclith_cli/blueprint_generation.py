@@ -19,6 +19,7 @@ from arclith_cli.application_blueprints import (
 )
 from arclith_cli.core_scaffold import add_entity_cmd, validated_entity_names
 from arclith_cli.entity_scanner import EntityInfo, scan_blueprint_models
+from arclith_cli.feature_names import normalize_public_feature_name
 from arclith_cli.feature_manifest import (
     FEATURE_MANIFEST_VERSION,
     PARAMETERIZED_FEATURE_MANIFEST_VERSION,
@@ -127,7 +128,7 @@ def plan_application_blueprint_for_entity(
             f"Entity {entity.pascal!r} normalizes to the reserved Python keyword "
             f"{entity.snake!r}"
         )
-    feature = _feature_name(feature_name or (entity.snake if entity is not None else ""))
+    feature = normalize_public_feature_name(feature_name or (entity.snake if entity is not None else ""))
     canonical_parameters = canonical_blueprint_parameters(blueprint, parameters)
     parameter_digest = application_parameters_digest(blueprint, canonical_parameters)
     operations = blueprint.operations
@@ -560,14 +561,3 @@ def _require_entity(project_dir: Path, raw_name: str) -> EntityInfo:
         f"Entités détectées : {detected}."
     )
     raise typer.Exit(1)
-
-
-def _feature_name(raw: str) -> str:
-    normalized = raw.strip().lower().replace("-", "_")
-    if (
-        not normalized.isidentifier()
-        or normalized.startswith("_")
-        or keyword.iskeyword(normalized)
-    ):
-        raise ValueError(f"Invalid public feature name: {raw!r}")
-    return normalized
